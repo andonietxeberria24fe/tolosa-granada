@@ -1,136 +1,231 @@
-const MAP_FILE = "assets/map/europe.geojson";
+(() => {
+  const MAP_FILE = "assets/map/europe.geojson";
 
-const stops = [
-  { name: "Tolosa", lon: -2.07, lat: 43.13 },
-  { name: "Alegui", lon: -2.10, lat: 43.10 },
-  { name: "Aizkorri", lon: -2.33, lat: 42.96 },
-  { name: "Óbanos", lon: -1.78, lat: 42.68 },
-  { name: "Oropesa", lon: 0.15, lat: 40.09 },
-  { name: "Benidorm", lon: -0.13, lat: 38.54 },
-  { name: "Granada", lon: -3.60, lat: 37.18 }
-];
+  // Coordenadas aproximadas para situar las paradas.
+  // Después podemos ajustar la posición visual de cada punto.
+  const stops = [
+    { name: "Tolosa", lat: 43.135, lon: -2.078 },
+    { name: "Alegui", lat: 43.100, lon: -2.095 },
+    { name: "Aizkorri", lat: 42.960, lon: -2.330 },
+    { name: "Óbanos", lat: 42.680, lon: -1.785 },
+    { name: "Oropesa", lat: 40.092, lon: 0.135 },
+    { name: "Benidorm", lat: 38.541, lon: -0.122 },
+    { name: "Granada", lat: 37.177, lon: -3.598 }
+  ];
 
-async function loadMap() {
-  const mapElement = document.getElementById("map");
-  const statusElement = document.getElementById("status");
-
-  try {
-    const response = await fetch(MAP_FILE);
-
-    if (!response.ok) {
-      throw new Error(`No se pudo cargar el mapa (${response.status})`);
-    }
-
-    const geojson = await response.json();
-    drawMap(mapElement, geojson);
-    statusElement.textContent = "Ruta preparada. Próximamente, el coche se pondrá en marcha.";
-  } catch (error) {
-    console.error(error);
-    statusElement.textContent =
-      "No se pudo cargar el mapa. Comprueba que europe.geojson esté en assets/map/.";
-  }
-}
-
-function drawMap(container, geojson) {
-  const width = 900;
-  const height = 560;
-
-  // Encuadre inicial aproximado de España.
   const bounds = {
-    minLon: -5.5,
-    maxLon: 2.5,
-    minLat: 36.5,
-    maxLat: 44.2
+    minLon: -5.8,
+    maxLon: 2.8,
+    minLat: 36.2,
+    maxLat: 44.6
   };
 
-  const project = (lon, lat) => ({
-    x: ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon)) * width,
-    y: height - ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * height
-  });
+  const svgNS = "http://www.w3.org/2000/svg";
+  let svg;
+  let routePath;
+  let car;
+  let markerElements = [];
+  let mapReady = false;
 
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", "Mapa de España con la ruta de Tolosa a Granada");
+  function project(lon, lat) {
+    const width = svg.clientWidth || 1000;
+    const height = svg.clientHeight || 700;
+    const mapWidth = bounds.maxLon - bounds.minLon;
+    const mapHeight = bounds.maxLat - bounds.minLat;
 
-  const mapGroup = document.createElementNS(svg.namespaceURI, "g");
+    // Ajuste de proporción aproximado para latitudes de España.
+    const xRatio = (lon - bounds.minLon) / mapWidth;
+    const yRatio = (bounds.maxLat - lat) / mapHeight;
 
-  function drawRing(ring) {
+    const scale = Math.min(width / mapWidth, height / mapHeight);
+    const drawnWidth = mapWidth * scale;
+    const drawnHeight = mapHeight * scale;
+    const offsetX = (width - drawnWidth) / 2;
+    const offsetY = (height - drawnHeight) / 2;
+
+    return {
+      x: offsetX + xRatio * drawnWidth,
+      y: offsetY + yRatio * drawnHeight
+    };
+  }
+
+  function createSvgElement(name, attributes = {}) {
+    const element = document.createElementNS(svgNS, name);
+    Object.entries(attributes).forEach(([key, value]) => {
+      element.setAttribute(key, value);
+    });
+    return element;
+  }
+
+  function ringToPath(ring) {
     return ring.map(([lon, lat], index) => {
       const point = project(lon, lat);
       return `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`;
     }).join(" ") + " Z";
   }
 
-  function drawGeometry(geometry) {
+  function drawGeometry(geometry, group) {
     if (!geometry) return;
 
     if (geometry.type === "Polygon") {
       geometry.coordinates.forEach(ring => {
-        const path = document.createElementNS(svg.namespaceURI, "path");
-        path.setAttribute("d", drawRing(ring));
-        path.setAttribute("class", "land-shape");
-        mapGroup.appendChild(path);
+        group.appendChild(createSvgElement("path", {
+          d: ringToPath(ring),
+          class: "country"
+        }));
       });
-    }
-
-    if (geometry.type === "MultiPolygon") {
+    } else if (geometry.type === "MultiPolygon") {
       geometry.coordinates.forEach(polygon => {
         polygon.forEach(ring => {
-          const path = document.createElementNS(svg.namespaceURI, "path");
-          path.setAttribute("d", drawRing(ring));
-          path.setAttribute("class", "land-shape");
-          mapGroup.appendChild(path);
+          group.appendChild(createSvgElement("path", {
+            d: ringToPath(ring),
+            class: "country"
+          }));
         });
       });
-    }
-
-    if (geometry.type === "GeometryCollection") {
-      geometry.geometries.forEach(drawGeometry);
+    } else if (geometry.type === "GeometryCollection") {
+      geometry.geometries.forEach(item => drawGeometry(item, group));
     }
   }
 
-  const features = geojson.type === "FeatureCollection"
-    ? geojson.features
-    : geojson.type === "Feature"
-      ? [geojson]
-      : [];
+  function makeRoutePath(routeStops) {
+    const points = routeStops.map(stop => project(stop.lon, stop.lat));
+    if (!points.length) return "";
 
-  features.forEach(feature => drawGeometry(feature.geometry));
+    // Curvas suaves entre los puntos; no pretende ser un trazado GPS.
+    let d = `M ${points[0].x} ${points[0].y}`;
 
-  // Ruta entre las paradas.
-  const route = document.createElementNS(svg.namespaceURI, "path");
-  const routePoints = stops.map(stop => project(stop.lon, stop.lat));
-  route.setAttribute(
-    "d",
-    routePoints.map((point, index) =>
-      `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`
-    ).join(" ")
-  );
-  route.setAttribute("class", "route-line");
-  mapGroup.appendChild(route);
+    for (let i = 1; i < points.length; i++) {
+      const previous = points[i - 1];
+      const current = points[i];
+      const middleX = (previous.x + current.x) / 2;
+      const middleY = (previous.y + current.y) / 2;
 
-  // Marcadores y nombres de las paradas.
-  stops.forEach((stop, index) => {
-    const point = project(stop.lon, stop.lat);
+      d += ` Q ${middleX} ${middleY} ${current.x} ${current.y}`;
+    }
 
-    const marker = document.createElementNS(svg.namespaceURI, "circle");
-    marker.setAttribute("cx", point.x);
-    marker.setAttribute("cy", point.y);
-    marker.setAttribute("r", index === stops.length - 1 ? "8" : "6");
-    marker.setAttribute("class", "stop-marker");
-    mapGroup.appendChild(marker);
+    return d;
+  }
 
-    const label = document.createElementNS(svg.namespaceURI, "text");
-    label.setAttribute("x", point.x + 10);
-    label.setAttribute("y", point.y - 10);
-    label.setAttribute("class", "stop-label");
-    label.textContent = stop.name;
-    mapGroup.appendChild(label);
-  });
+  function drawStops(group) {
+    markerElements = [];
 
-  svg.appendChild(mapGroup);
-  container.replaceChildren(svg);
-}
+    stops.forEach((stop, index) => {
+      const point = project(stop.lon, stop.lat);
+      const marker = createSvgElement("circle", {
+        cx: point.x,
+        cy: point.y,
+        r: index === 0 || index === stops.length - 1 ? 7 : 5.5,
+        class: "stop-dot",
+        "data-stop-index": index
+      });
 
-loadMap();
+      group.appendChild(marker);
+      markerElements.push(marker);
+    });
+  }
+
+  function updateMapLayout() {
+    if (!mapReady) return;
+
+    routePath.setAttribute("d", makeRoutePath(stops));
+
+    stops.forEach((stop, index) => {
+      const point = project(stop.lon, stop.lat);
+      markerElements[index].setAttribute("cx", point.x);
+      markerElements[index].setAttribute("cy", point.y);
+    });
+
+    if (window.TripApp) {
+      window.TripApp.positionCar();
+    }
+  }
+
+  async function init() {
+    const container = document.getElementById("map");
+    car = document.getElementById("car");
+
+    svg = createSvgElement("svg", {
+      viewBox: "0 0 1000 700",
+      preserveAspectRatio: "xMidYMid meet",
+      role: "img",
+      "aria-label": "Mapa de España con la ruta de Tolosa a Granada"
+    });
+
+    // Dibujamos con un sistema de coordenadas fijo para que el SVG
+    // mantenga la proporción al cambiar el tamaño de pantalla.
+    const width = 1000;
+    const height = 700;
+    const mapWidth = bounds.maxLon - bounds.minLon;
+    const mapHeight = bounds.maxLat - bounds.minLat;
+    const scale = Math.min(width / mapWidth, height / mapHeight);
+    const drawnWidth = mapWidth * scale;
+    const drawnHeight = mapHeight * scale;
+    const offsetX = (width - drawnWidth) / 2;
+    const offsetY = (height - drawnHeight) / 2;
+
+    // Reemplaza project por una proyección fija que coincide con el viewBox.
+    project = function (lon, lat) {
+      return {
+        x: offsetX + ((lon - bounds.minLon) / mapWidth) * drawnWidth,
+        y: offsetY + ((bounds.maxLat - lat) / mapHeight) * drawnHeight
+      };
+    };
+
+    const response = await fetch(MAP_FILE);
+    if (!response.ok) {
+      throw new Error(`No se pudo cargar ${MAP_FILE}`);
+    }
+
+    const geojson = await response.json();
+    const features = geojson.type === "FeatureCollection"
+      ? geojson.features
+      : geojson.type === "Feature"
+        ? [geojson]
+        : [];
+
+    const landGroup = createSvgElement("g");
+    features.forEach(feature => drawGeometry(feature.geometry, landGroup));
+    svg.appendChild(landGroup);
+
+    routePath = createSvgElement("path", {
+      d: makeRoutePath(stops),
+      class: "travel-route"
+    });
+    svg.appendChild(routePath);
+
+    const stopGroup = createSvgElement("g");
+    drawStops(stopGroup);
+    svg.appendChild(stopGroup);
+
+    container.replaceChildren(svg);
+    mapReady = true;
+
+    window.addEventListener("resize", updateMapLayout);
+    updateMapLayout();
+  }
+
+  function setCurrentStop(index) {
+    markerElements.forEach((marker, markerIndex) => {
+      marker.classList.toggle("current", markerIndex === index);
+    });
+  }
+
+  function getStopPosition(index) {
+    return project(stops[index].lon, stops[index].lat);
+  }
+
+  function setDirectMode(enabled) {
+    if (routePath) {
+      routePath.classList.toggle("direct", enabled);
+    }
+  }
+
+  window.TripMap = {
+    stops,
+    init,
+    getStopPosition,
+    setCurrentStop,
+    setDirectMode
+  };
+})();
