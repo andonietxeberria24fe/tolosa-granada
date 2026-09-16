@@ -2,7 +2,7 @@
 
   --bg: #f7f8fa;
 
-  --surface: rgba(255,255,255,.95);
+  --surface: rgba(255,255,255,.96);
 
   --text: #111;
 
@@ -15,8 +15,6 @@
   --land-stroke: #c8cdcf;
 
   --route: #aeb2b4;
-
-  --black: #111;
 
 }
 
@@ -124,12 +122,14 @@ button {
 
 
 .header h1 span {
+
   font-size: 30px;
+
 }
 
 
 /* =====================================================
-   SELECTOR SUPERIOR
+   SELECTOR DE VIAJE
 ===================================================== */
 
 .mode-switch {
@@ -152,7 +152,7 @@ button {
   border-radius: 999px;
 
   background:
-    rgba(255,255,255,.86);
+    rgba(255,255,255,.88);
 
   box-shadow:
     0 8px 30px rgba(0,0,0,.10);
@@ -169,23 +169,29 @@ button {
 
   border-radius: 999px;
 
-  padding: 10px 15px;
+  padding:
+    10px 15px;
 
   background:
     transparent;
 
-  color: #777;
+  color:
+    #777;
 
-  font-size: 12px;
+  font-size:
+    12px;
 
-  font-weight: 700;
+  font-weight:
+    700;
 
-  cursor: pointer;
+  cursor:
+    pointer;
+
+  white-space:
+    nowrap;
 
   transition:
     .18s ease;
-
-  white-space: nowrap;
 
 }
 
@@ -200,22 +206,6 @@ button {
 
   box-shadow:
     0 3px 10px rgba(0,0,0,.15);
-
-}
-
-
-.mode-button:hover {
-
-  color:
-    #111;
-
-}
-
-
-.mode-button.selected:hover {
-
-  color:
-    white;
 
 }
 
@@ -266,13 +256,10 @@ button {
 }
 
 
-/* =====================================================
-   TIERRA
-===================================================== */
-
 .map-background {
 
-  fill: transparent;
+  fill:
+    transparent;
 
 }
 
@@ -280,12 +267,13 @@ button {
 .country {
 
   fill:
-    var(--land);
+    var(--land) !important;
 
   stroke:
-    var(--land-stroke);
+    var(--land-stroke) !important;
 
-  stroke-width: 1.1;
+  stroke-width:
+    1.1;
 
   vector-effect:
     non-scaling-stroke;
@@ -303,7 +291,8 @@ button {
 .travel-route,
 .travel-progress {
 
-  fill: none;
+  fill:
+    none;
 
   stroke-linecap:
     round;
@@ -363,13 +352,6 @@ button {
 }
 
 
-/*
- * IMPORTANTE:
- * no .stop-label porque ya no hay nombres
- * sobre el mapa.
- */
-
-
 /* =====================================================
    VEHÍCULO
 ===================================================== */
@@ -391,9 +373,6 @@ button {
     "Apple Color Emoji",
     "Segoe UI Emoji",
     sans-serif;
-
-  dominant-baseline:
-    middle;
 
 }
 
@@ -447,7 +426,7 @@ button {
     30px;
 
   background:
-    rgba(255,255,255,.96);
+    rgba(255,255,255,.97);
 
   box-shadow:
     0 25px 80px rgba(0,0,0,.14);
@@ -576,7 +555,10 @@ button {
 
 
 .trip-option-text strong {
-  font-size: 15px;
+
+  font-size:
+    15px;
+
 }
 
 
@@ -623,7 +605,8 @@ button {
 }
 
 
-.trip-option.selected .trip-check {
+.trip-option.selected
+.trip-check {
 
   opacity:
     1;
@@ -674,10 +657,10 @@ button {
 
 
 /* =====================================================
-   AVANZAMOS
+   BOTONES AVANZAMOS / RECUERDOS
 ===================================================== */
 
-.floating-continue {
+.trip-actions {
 
   position:
     fixed;
@@ -686,20 +669,13 @@ button {
     50%;
 
   bottom:
-    28px;
+    25px;
 
   z-index:
-    45;
+    35;
 
   transform:
-    translateX(-50%)
-    translateY(15px);
-
-  opacity:
-    0;
-
-  pointer-events:
-    none;
+    translateX(-50%);
 
   display:
     flex;
@@ -707,23 +683,86 @@ button {
   align-items:
     center;
 
-  justify-content:
-    center;
-
   gap:
-    10px;
+    12px;
 
-  min-width:
-    180px;
+  width:
+    min(470px, calc(100% - 40px));
 
-  padding:
-    15px 25px;
+  transition:
+    opacity .2s ease,
+    transform .2s ease;
+
+}
+
+
+.trip-actions.hidden {
+
+  opacity:
+    0;
+
+  pointer-events:
+    none;
+
+  transform:
+    translateX(-50%)
+    translateY(15px);
+
+}
+
+
+.action-button {
+
+  flex:
+    1;
+
+  min-height:
+    54px;
 
   border:
     0;
 
   border-radius:
-    999px;
+    18px;
+
+  font-size:
+    14px;
+
+  font-weight:
+    750;
+
+  cursor:
+    pointer;
+
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.16);
+
+  transition:
+    .18s ease;
+
+}
+
+
+.action-button:hover {
+
+  transform:
+    translateY(-2px);
+
+}
+
+
+.action-button span {
+
+  margin:
+    0 5px;
+
+  font-size:
+    18px;
+
+}
+
+
+.action-continue {
 
   background:
     #111;
@@ -731,68 +770,30 @@ button {
   color:
     white;
 
-  font-size:
-    15px;
+}
 
-  font-weight:
-    750;
 
-  box-shadow:
-    0 12px 35px rgba(0,0,0,.25);
+.action-memory {
 
-  cursor:
-    pointer;
+  background:
+    white;
 
-  transition:
-    .28s ease;
+  color:
+    #111;
 
 }
 
 
-.floating-continue.visible {
+.action-button:disabled {
 
   opacity:
-    1;
-
-  pointer-events:
-    auto;
-
-  transform:
-    translateX(-50%)
-    translateY(0);
-
-}
-
-
-.floating-continue:disabled {
-
-  opacity:
-    .72;
+    .55;
 
   cursor:
     default;
 
-}
-
-
-/*
- * CUANDO EL CAJÓN ESTÁ ABIERTO,
- * EL BOTÓN SUBE CON ÉL.
- */
-
-.memory-panel.open
-~ .floating-continue {
-
-  bottom:
-    calc(58vh + 18px);
-
-}
-
-
-.floating-continue span {
-
-  font-size:
-    19px;
+  transform:
+    none;
 
 }
 
@@ -1000,7 +1001,7 @@ button {
 
 
 /* =====================================================
-   BOTÓN MÓVIL PARADAS
+   PARADAS MÓVIL
 ===================================================== */
 
 .mobile-stops-button {
@@ -1012,7 +1013,7 @@ button {
 
 
 /* =====================================================
-   CAJÓN DE RECUERDOS
+   VENTANA DE RECUERDOS
 ===================================================== */
 
 .memory-panel {
@@ -1023,42 +1024,39 @@ button {
   left:
     50%;
 
-  bottom:
-    0;
+  top:
+    10%;
 
   z-index:
-    40;
+    60;
 
   width:
-    min(720px, calc(100% - 40px));
+    min(760px, calc(100% - 40px));
 
   height:
-    58vh;
-
-  max-height:
-    700px;
+    80vh;
 
   overflow:
     hidden;
 
   padding:
-    14px 28px 30px;
+    14px 30px 30px;
 
   border-radius:
-    28px 28px 0 0;
+    30px;
 
   background:
-    rgba(255,255,255,.97);
+    rgba(255,255,255,.98);
 
   box-shadow:
-    0 -12px 50px rgba(0,0,0,.16);
+    0 30px 100px rgba(0,0,0,.25);
 
   backdrop-filter:
-    blur(20px);
+    blur(25px);
 
   transform:
     translateX(-50%)
-    translateY(105%);
+    translateY(110%);
 
   opacity:
     0;
@@ -1067,8 +1065,8 @@ button {
     none;
 
   transition:
-    transform .3s ease,
-    opacity .3s ease;
+    transform .35s ease,
+    opacity .25s ease;
 
 }
 
@@ -1083,16 +1081,18 @@ button {
 
   transform:
     translateX(-50%)
-    translateY(58%);
+    translateY(0);
 
 }
 
 
 .memory-panel.expanded {
 
-  transform:
-    translateX(-50%)
-    translateY(0);
+  top:
+    2%;
+
+  height:
+    96vh;
 
 }
 
@@ -1104,16 +1104,16 @@ button {
 .memory-grabber {
 
   width:
-    52px;
+    55px;
 
   height:
     5px;
 
   margin:
-    0 auto 16px;
+    0 auto 17px;
 
   border-radius:
-    99px;
+    999px;
 
   background:
     #cfd1d3;
@@ -1136,7 +1136,7 @@ button {
 
 
 /* =====================================================
-   CABECERA DEL CAJÓN
+   CABECERA RECUERDOS
 ===================================================== */
 
 .memory-top {
@@ -1145,7 +1145,7 @@ button {
     flex;
 
   align-items:
-    center;
+    flex-start;
 
   justify-content:
     space-between;
@@ -1163,6 +1163,23 @@ button {
 
   gap:
     7px;
+
+}
+
+
+.memory-location {
+
+  margin-top:
+    5px;
+
+  font-size:
+    24px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    -.04em;
 
 }
 
@@ -1194,22 +1211,22 @@ button {
 
 
 /* =====================================================
-   CONTENIDO
+   CONTENIDO RECUERDOS
 ===================================================== */
 
 .memory-content {
 
   height:
-    calc(100% - 65px);
+    calc(100% - 80px);
 
   margin-top:
-    4px;
+    5px;
 
   overflow-y:
     auto;
 
   padding:
-    0 2px 40px;
+    0 3px 40px;
 
   -webkit-overflow-scrolling:
     touch;
@@ -1220,7 +1237,7 @@ button {
 .memory-content h2 {
 
   margin:
-    18px 0 8px;
+    22px 0 9px;
 
   font-size:
     32px;
@@ -1257,7 +1274,7 @@ button {
     10px;
 
   margin-top:
-    22px;
+    24px;
 
 }
 
@@ -1274,7 +1291,7 @@ button {
     cover;
 
   border-radius:
-    15px;
+    16px;
 
 }
 
@@ -1284,6 +1301,7 @@ button {
 ===================================================== */
 
 @media (max-width: 800px) {
+
 
   .header {
 
@@ -1339,6 +1357,8 @@ button {
 
   }
 
+
+  /* PARADAS */
 
   .stops-panel {
 
@@ -1421,45 +1441,73 @@ button {
   }
 
 
-  .memory-panel {
+  /* BOTONES */
+
+  .trip-actions {
+
+    bottom:
+      17px;
 
     width:
-      100%;
+      calc(100% - 30px);
 
-    height:
-      75vh;
-
-    max-height:
-      none;
-
-    padding:
-      12px 20px 25px;
+    gap:
+      9px;
 
   }
 
 
-  .memory-panel.open {
+  .action-button {
 
-    transform:
-      translateX(-50%)
-      translateY(62%);
+    min-height:
+      51px;
+
+    border-radius:
+      16px;
+
+    font-size:
+      13px;
+
+  }
+
+
+  /* RECUERDOS */
+
+  .memory-panel {
+
+    width:
+      calc(100% - 20px);
+
+    height:
+      88vh;
+
+    top:
+      6%;
+
+    padding:
+      12px 20px 25px;
+
+    border-radius:
+      27px;
 
   }
 
 
   .memory-panel.expanded {
 
-    transform:
-      translateX(-50%)
-      translateY(0);
+    top:
+      1%;
+
+    height:
+      98vh;
 
   }
 
 
   .memory-content {
 
-    padding-bottom:
-      80px;
+    height:
+      calc(100% - 80px);
 
   }
 
@@ -1471,27 +1519,38 @@ button {
 
   }
 
-
-  .floating-continue {
-
-    bottom:
-      20px;
-
-  }
-
-
-  .memory-panel.open
-  ~ .floating-continue {
-
-    bottom:
-      calc(38vh + 20px);
-
-  }
-
 }
 
 
 @media (max-width: 430px) {
+
+
+  .header h1 {
+
+    font-size:
+      32px;
+
+  }
+
+
+  .mode-switch {
+
+    max-width:
+      180px;
+
+  }
+
+
+  .mode-button {
+
+    padding:
+      8px 9px;
+
+    font-size:
+      10px;
+
+  }
+
 
   .start-card {
 
@@ -1520,21 +1579,10 @@ button {
   }
 
 
-  .mode-switch {
-
-    max-width:
-      180px;
-
-  }
-
-
-  .mode-button {
+  .memory-location {
 
     font-size:
-      10px;
-
-    padding:
-      8px 9px;
+      21px;
 
   }
 
