@@ -1,19 +1,17 @@
-```javascript
 (() => {
   "use strict";
 
   const NS = "http://www.w3.org/2000/svg";
-
   const WIDTH = 1000;
   const HEIGHT = 700;
 
   const stops = [
-    { id: "tolosa",   name: "Tolosa",   lon: -2.078, lat: 43.135 },
+    { id: "tolosa", name: "Tolosa", lon: -2.078, lat: 43.135 },
     { id: "aizkorri", name: "Aizkorri", lon: -2.330, lat: 42.960 },
-    { id: "obanos",   name: "Óbanos",   lon: -1.785, lat: 42.680 },
-    { id: "oropesa",  name: "Oropesa",  lon:  0.135, lat: 40.092 },
+    { id: "obanos", name: "Óbanos", lon: -1.785, lat: 42.680 },
+    { id: "oropesa", name: "Oropesa", lon: 0.135, lat: 40.092 },
     { id: "benidorm", name: "Benidorm", lon: -0.122, lat: 38.541 },
-    { id: "granada",  name: "Granada",  lon: -3.598, lat: 37.177 }
+    { id: "granada", name: "Granada", lon: -3.598, lat: 37.177 }
   ];
 
   function project(lon, lat) {
@@ -25,7 +23,6 @@
 
   const roadRoute = [
     [-2.078, 43.135],
-
     [-2.12, 43.08],
     [-2.20, 43.02],
 
@@ -52,7 +49,7 @@
 
     [0.135, 40.092],
 
-    /* Oropesa → Benidorm por el interior */
+    // Oropesa → Benidorm por el interior
     [0.02, 39.98],
     [-0.12, 39.86],
     [-0.28, 39.72],
@@ -174,7 +171,6 @@
     });
 
     path.setAttribute("d", d);
-
     parent.appendChild(path);
   }
 
@@ -234,10 +230,8 @@
   }
 
   /*
-   * Coloca vehículo Y línea usando exactamente
-   * la misma distancia del mismo path.
-   *
-   * Así la línea jamás se queda detrás.
+   * Mueve el vehículo Y la línea exactamente
+   * con la misma fracción del recorrido.
    */
   function positionVehicle(fraction) {
     if (!vehicle || !routePath || !progressPath) {
@@ -250,13 +244,12 @@
     );
 
     const total = routePath.getTotalLength();
-
     const distance = total * fraction;
 
     const point = routePath.getPointAtLength(distance);
 
     /*
-     * Dirección instantánea.
+     * Dirección del recorrido.
      */
     const sample = Math.max(
       3,
@@ -274,33 +267,23 @@
     const dx = after.x - before.x;
     const dy = after.y - before.y;
 
-    /*
-     * Ángulo real de desplazamiento.
-     */
     let angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
     /*
-     * Los emojis vienen con una orientación
-     * que no coincide con nuestra ruta.
-     *
-     * El ajuste de 180º hace que:
-     *
-     * ✈️ vaya punta abajo-izquierda
-     * 🚙 vaya en la dirección del recorrido.
+     * AVIÓN:
+     * ajuste para que la punta mire
+     * hacia abajo-izquierda.
      */
     if (currentMode === "direct") {
       angle += 135;
-    } else {
-      angle += 0;
     }
 
     /*
-     * Evitamos giros raros al principio/final.
+     * COCHE:
+     * sigue la dirección del recorrido.
      */
-    if (Math.abs(dx) < 0.01 && Math.abs(dy) < 0.01) {
-      angle = currentMode === "direct"
-        ? 135
-        : 180;
+    if (currentMode === "real") {
+      angle += 0;
     }
 
     vehicle.setAttribute(
@@ -309,27 +292,28 @@
     );
 
     /*
-     * LA LÍNEA USA EXACTAMENTE LA MISMA FRACCIÓN.
+     * LA LÍNEA USA EXACTAMENTE LA MISMA
+     * DISTANCIA QUE EL VEHÍCULO.
      */
-    const lineLength = total;
-
     progressPath.style.strokeDasharray =
-      `${lineLength} ${lineLength}`;
+      `${total} ${total}`;
 
     progressPath.style.strokeDashoffset =
-      `${lineLength - (lineLength * fraction)}`;
+      `${total - (total * fraction)}`;
 
     /*
-     * Casos extremos exactos.
+     * Inicio exacto.
      */
     if (fraction <= 0) {
       progressPath.style.strokeDashoffset =
-        `${lineLength}`;
+        `${total}`;
     }
 
+    /*
+     * Final exacto.
+     */
     if (fraction >= 1) {
-      progressPath.style.strokeDashoffset =
-        "0";
+      progressPath.style.strokeDashoffset = "0";
     }
 
     return {
@@ -339,16 +323,14 @@
   }
 
   /*
-   * Esta función queda pública para app.js.
-   * NO anima por separado.
+   * Se mantiene por compatibilidad con app.js.
    */
   function setProgress(fraction) {
     positionVehicle(fraction);
   }
 
   /*
-   * Calculamos la fracción de cada parada usando
-   * la MISMA geometría que usa SVG.
+   * Fracción exacta de cada parada.
    */
   function getRoadStopFraction(id) {
     const index = roadStopRouteIndexes[id];
@@ -408,12 +390,7 @@
       pathData
     );
 
-    /*
-     * Elimina cualquier estado anterior.
-     */
     progressPath.style.transition = "none";
-    progressPath.style.strokeDasharray = "none";
-    progressPath.style.strokeDashoffset = "0";
 
     setVehicleType(currentMode);
 
@@ -437,10 +414,6 @@
         visible ? "" : "none";
     });
 
-    /*
-     * MUY IMPORTANTE:
-     * primero ponemos la línea a cero.
-     */
     requestAnimationFrame(() => {
       const total =
         routePath.getTotalLength();
@@ -491,5 +464,61 @@
 
       if (response.ok) {
         const geojson =
-          await
-```
+          await response.json();
+
+        drawGeoJson(geojson);
+      }
+    } catch (error) {
+      console.warn(
+        "No se pudo cargar europe.geojson",
+        error
+      );
+    }
+
+    const routeGroup =
+      createSvgElement("g", {
+        class: "routes"
+      });
+
+    routePath =
+      createSvgElement("path", {
+        class: "travel-route",
+        fill: "none"
+      });
+
+    progressPath =
+      createSvgElement("path", {
+        class: "travel-progress",
+        fill: "none"
+      });
+
+    routeGroup.appendChild(routePath);
+    routeGroup.appendChild(progressPath);
+
+    svg.appendChild(routeGroup);
+
+    drawStops();
+    createVehicle();
+
+    setMode("direct");
+
+    window.TripMap = {
+      ready: true,
+      stops,
+      roadRoute,
+      directRoute,
+      setMode,
+      setProgress,
+      positionAtRouteFraction: positionVehicle,
+      moveVehicle: positionVehicle,
+      getRoadStopFraction
+    };
+
+    document.dispatchEvent(
+      new CustomEvent("trip-map-ready")
+    );
+  }
+
+  drawMap();
+
+})();
