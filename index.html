@@ -2,34 +2,85 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
 
   <meta name="theme-color" content="#f7f8fa">
 
   <title>El viaje</title>
+
   <link rel="icon" href="data:,">
 
-  <link rel="stylesheet" href="/tolosa-granada/css/style.css">
+  <link
+    rel="stylesheet"
+    href="/tolosa-granada/css/style.css"
+  >
 </head>
 
 <body>
 
 <main id="app">
 
+  <!-- CABECERA -->
   <header class="header">
-    <div class="eyebrow">UN VIAJE PARA RECORDAR</div>
-    <h1>El viaje <span>✦</span></h1>
+
+    <div class="eyebrow">
+      UN VIAJE PARA RECORDAR
+    </div>
+
+    <h1>
+      El viaje <span>✦</span>
+    </h1>
+
   </header>
 
 
+  <!-- SELECTOR SUPERIOR DE VIAJE -->
+  <div
+    id="mode-switch"
+    class="mode-switch"
+  >
+
+    <button
+      class="mode-button selected"
+      data-mode="direct"
+      type="button"
+    >
+      ✈️
+      <span>Tolosa → Granada</span>
+    </button>
+
+    <button
+      class="mode-button"
+      data-mode="real"
+      type="button"
+    >
+      🚙
+      <span>El viaje de verdad</span>
+    </button>
+
+  </div>
+
+
   <!-- PANTALLA INICIAL -->
-  <section id="start-screen" class="start-screen">
+  <section
+    id="start-screen"
+    class="start-screen"
+  >
 
     <div class="start-card">
 
-      <div class="start-eyebrow">NUESTRO VIAJE</div>
+      <div class="start-eyebrow">
+        NUESTRO VIAJE
+      </div>
 
-      <h2>¿Qué viaje quieres hacer?</h2>
+      <h2>
+        ¿Qué viaje quieres hacer?
+      </h2>
+
 
       <div class="trip-options">
 
@@ -38,14 +89,27 @@
           data-mode="direct"
           type="button"
         >
-          <span class="trip-option-icon">✈️</span>
 
-          <span class="trip-option-text">
-            <strong>Tolosa → Granada</strong>
-            <small>El viaje directo</small>
+          <span class="trip-option-icon">
+            ✈️
           </span>
 
-          <span class="trip-check">✓</span>
+          <span class="trip-option-text">
+
+            <strong>
+              Tolosa → Granada
+            </strong>
+
+            <small>
+              El viaje directo
+            </small>
+
+          </span>
+
+          <span class="trip-check">
+            ✓
+          </span>
+
         </button>
 
 
@@ -54,14 +118,27 @@
           data-mode="real"
           type="button"
         >
-          <span class="trip-option-icon">🚙</span>
 
-          <span class="trip-option-text">
-            <strong>El viaje de verdad</strong>
-            <small>Tolosa → Granada con todas las paradas</small>
+          <span class="trip-option-icon">
+            🚙
           </span>
 
-          <span class="trip-check">✓</span>
+          <span class="trip-option-text">
+
+            <strong>
+              El viaje de verdad
+            </strong>
+
+            <small>
+              Tolosa → Granada con todas las paradas
+            </small>
+
+          </span>
+
+          <span class="trip-check">
+            ✓
+          </span>
+
         </button>
 
       </div>
@@ -83,12 +160,15 @@
   <!-- MAPA -->
   <div id="map-container">
 
-    <div id="map" aria-label="Mapa del recorrido"></div>
+    <div
+      id="map"
+      aria-label="Mapa del recorrido"
+    ></div>
 
   </div>
 
 
-  <!-- BOTÓN SIEMPRE VISIBLE -->
+  <!-- BOTÓN AVANZAMOS -->
   <button
     id="continue-trip"
     class="floating-continue"
@@ -98,7 +178,7 @@
   </button>
 
 
-  <!-- BOTÓN PARADAS -->
+  <!-- PARADAS -->
   <button
     id="open-stops"
     class="mobile-stops-button"
@@ -111,7 +191,6 @@
   </button>
 
 
-  <!-- PANEL DE PARADAS -->
   <aside
     id="stops-panel"
     class="stops-panel"
@@ -123,9 +202,17 @@
     <div class="panel-heading">
 
       <div>
-        <div class="eyebrow">EL RECORRIDO</div>
-        <h2>Paradas</h2>
+
+        <div class="eyebrow">
+          EL RECORRIDO
+        </div>
+
+        <h2>
+          Paradas
+        </h2>
+
       </div>
+
 
       <button
         id="close-stops"
@@ -138,23 +225,35 @@
 
     </div>
 
-    <ol id="stop-list" class="stop-list"></ol>
 
-    <p id="travel-status" class="travel-status">
+    <ol
+      id="stop-list"
+      class="stop-list"
+    ></ol>
+
+
+    <p
+      id="travel-status"
+      class="travel-status"
+    >
       Preparados para salir
     </p>
 
   </aside>
 
 
-  <!-- PANEL DE RECUERDO -->
+  <!-- CAJÓN DE RECUERDOS -->
   <section
     id="memory-panel"
     class="memory-panel"
     aria-hidden="true"
   >
 
-    <div class="sheet-grabber"></div>
+    <div
+      id="memory-grabber"
+      class="memory-grabber"
+    ></div>
+
 
     <div class="memory-top">
 
@@ -162,16 +261,32 @@
         UN RECUERDO DEL VIAJE
       </span>
 
-      <button
-        id="close-memory"
-        class="icon-button"
-        aria-label="Cerrar recuerdo"
-        type="button"
-      >
-        ×
-      </button>
+
+      <div class="memory-top-actions">
+
+        <button
+          id="expand-memory"
+          class="memory-expand"
+          type="button"
+          aria-label="Subir recuerdos"
+        >
+          ⌃
+        </button>
+
+
+        <button
+          id="close-memory"
+          class="icon-button"
+          aria-label="Cerrar recuerdo"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
 
     </div>
+
 
     <div
       id="memory-content"
