@@ -45,11 +45,11 @@
 
     const title = document.createElement("h2");
     title.textContent = memory.title;
-    content.appendChild(title);
 
     const paragraph = document.createElement("p");
     paragraph.textContent = memory.text;
-    content.appendChild(paragraph);
+
+    content.append(title, paragraph);
 
     if (memory.photos.length) {
       const gallery = document.createElement("div");
@@ -66,6 +66,7 @@
       content.appendChild(gallery);
     }
 
+    content.scrollTop = 0;
     panel.classList.add("open");
     panel.setAttribute("aria-hidden", "false");
   }
