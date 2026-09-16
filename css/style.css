@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
   --bg: #f7f8fa;
-  --panel: rgba(255,255,255,.94);
+  --panel: rgba(255,255,255,.95);
   --ink: #202630;
   --muted: #858c96;
   --line: #e5e8ed;
@@ -25,7 +25,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button { font: inherit; cursor: pointer; }
+button {
+  font: inherit;
+  cursor: pointer;
+}
 
 button:focus-visible {
   outline: 3px solid #9aa9bd;
@@ -39,7 +42,8 @@ button:focus-visible {
   min-height: 520px;
 }
 
-#map-container, #map {
+#map-container,
+#map {
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -92,7 +96,7 @@ button:focus-visible {
   padding: 5px;
   border: 1px solid rgba(30,42,60,.08);
   border-radius: 999px;
-  background: rgba(255,255,255,.88);
+  background: rgba(255,255,255,.9);
   box-shadow: 0 4px 18px rgba(30,42,60,.07);
   backdrop-filter: blur(18px);
 }
@@ -117,6 +121,7 @@ button:focus-visible {
   fill: #e9edf2;
   stroke: #cbd3dd;
   stroke-width: .65;
+  stroke-linejoin: round;
 }
 
 .travel-route {
@@ -152,17 +157,28 @@ button:focus-visible {
   stroke-width: 4;
 }
 
+.stop-label {
+  fill: #4b5563;
+  font-size: 15px;
+  font-weight: 650;
+  paint-order: stroke;
+  stroke: #f7f8fa;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
 #vehicle {
   position: absolute;
   z-index: 4;
   left: 0;
   top: 0;
-  font-size: 27px;
+  font-size: 29px;
   line-height: 1;
-  transform: translate(-50%, -70%);
-  filter: drop-shadow(0 3px 3px rgba(0,0,0,.16));
+  transform: translate(-50%, -65%) rotate(0deg);
+  transform-origin: 50% 65%;
+  filter: drop-shadow(0 4px 3px rgba(0,0,0,.24));
   pointer-events: none;
-  will-change: left, top;
+  will-change: left, top, transform;
   transition: left .08s linear, top .08s linear;
 }
 
@@ -274,7 +290,6 @@ button:focus-visible {
 
 .mobile-stops-button { display: none; }
 
-/* Recuerdo: contenido desplazable y botón siempre abajo */
 .memory-panel {
   position: absolute;
   z-index: 20;
@@ -362,6 +377,11 @@ button:focus-visible {
   background: var(--accent);
   color: white;
   font-weight: 650;
+}
+
+.primary-button:disabled {
+  opacity: .6;
+  cursor: wait;
 }
 
 .primary-button span { font-size: 20px; }
