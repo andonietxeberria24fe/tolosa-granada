@@ -7,7 +7,7 @@
   <title>El viaje</title>
 
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="/tolosa-granada/css/style.css">
 </head>
 <body>
   <main id="app">
@@ -32,6 +32,7 @@
 
     <aside id="stops-panel" class="stops-panel" aria-label="Paradas del viaje">
       <div class="sheet-grabber"></div>
+
       <div class="panel-heading">
         <div>
           <div class="eyebrow">EL RECORRIDO</div>
@@ -39,25 +40,31 @@
         </div>
         <button id="close-stops" class="icon-button" aria-label="Cerrar paradas">×</button>
       </div>
+
       <ol id="stop-list" class="stop-list"></ol>
       <p id="travel-status" class="travel-status">Preparados para salir</p>
     </aside>
 
     <section id="memory-panel" class="memory-panel" aria-hidden="true">
       <div class="sheet-grabber"></div>
+
       <div class="memory-top">
         <span class="eyebrow">UN RECUERDO DEL VIAJE</span>
         <button id="close-memory" class="icon-button" aria-label="Cerrar recuerdo">×</button>
       </div>
+
       <div id="memory-content" class="memory-content"></div>
+
       <div class="memory-actions">
-        <button id="continue-trip" class="primary-button">Seguimos <span>→</span></button>
+        <button id="continue-trip" class="primary-button">
+          Seguimos <span>→</span>
+        </button>
       </div>
     </section>
   </main>
 
-  <script src="./js/map.js"></script>
-  <script src="./js/gallery.js"></script>
-  <script src="./js/app.js"></script>
+  <script src="/tolosa-granada/js/map.js"></script>
+  <script src="/tolosa-granada/js/gallery.js"></script>
+  <script src="/tolosa-granada/js/app.js"></script>
 </body>
 </html>
