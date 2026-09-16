@@ -2,9 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
   <meta name="theme-color" content="#f7f8fa">
+
   <title>El viaje</title>
+
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/tolosa-granada/css/style.css">
 </head>
@@ -13,55 +19,106 @@
 
   <main id="app">
 
+    <!-- CABECERA -->
     <header class="header">
       <div class="eyebrow">UN VIAJE PARA RECORDAR</div>
-      <h1>El viaje <span>✦</span></h1>
+
+      <h1>
+        El viaje <span>✦</span>
+      </h1>
     </header>
 
-    <!-- PANTALLA INICIAL -->
+
+    <!-- =====================================
+         PANTALLA INICIAL
+    ====================================== -->
+
     <section id="start-screen" class="start-screen">
 
       <div class="start-card">
 
-        <div class="start-eyebrow">NUESTRO VIAJE</div>
+        <div class="start-eyebrow">
+          NUESTRO VIAJE
+        </div>
 
-        <h2>¿Qué viaje quieres hacer?</h2>
+        <h2>
+          ¿Qué viaje quieres hacer?
+        </h2>
+
 
         <div class="trip-options">
+
+          <!-- VIAJE DIRECTO -->
 
           <button
             class="trip-option selected"
             data-mode="direct"
             type="button"
           >
-            <span class="trip-option-icon">✈️</span>
 
-            <span class="trip-option-text">
-              <strong>Tolosa → Granada</strong>
-              <small>El viaje directo</small>
+            <span class="trip-option-icon">
+              ✈️
             </span>
 
-            <span class="trip-check">✓</span>
+            <span class="trip-option-text">
+
+              <strong>
+                Tolosa → Granada
+              </strong>
+
+              <small>
+                El viaje directo
+              </small>
+
+            </span>
+
+            <span class="trip-check">
+              ✓
+            </span>
+
           </button>
+
+
+          <!-- VIAJE REAL -->
 
           <button
             class="trip-option"
             data-mode="real"
             type="button"
           >
-            <span class="trip-option-icon">🚙</span>
 
-            <span class="trip-option-text">
-              <strong>El viaje de verdad</strong>
-              <small>Tolosa → Granada con todas las paradas</small>
+            <span class="trip-option-icon">
+              🚙
             </span>
 
-            <span class="trip-check">✓</span>
+            <span class="trip-option-text">
+
+              <strong>
+                El viaje de verdad
+              </strong>
+
+              <small>
+                Tolosa → Granada con todas las paradas
+              </small>
+
+            </span>
+
+            <span class="trip-check">
+              ✓
+            </span>
+
           </button>
 
         </div>
 
-        <button id="start-trip" class="primary-button" type="button">
+
+        <!-- BOTÓN INICIAL -->
+
+        <button
+          id="start-trip"
+          class="primary-button"
+          type="button"
+        >
           Seguimos <span>→</span>
         </button>
 
@@ -70,30 +127,51 @@
     </section>
 
 
-    <!-- MAPA -->
+    <!-- =====================================
+         MAPA
+    ====================================== -->
+
     <div id="map-container">
 
-      <div id="map" aria-label="Mapa del recorrido"></div>
+      <div
+        id="map"
+        aria-label="Mapa del recorrido"
+      ></div>
 
-      <div id="vehicle" aria-hidden="true">🚙</div>
+      <div
+        id="vehicle"
+        aria-hidden="true"
+      >
+        🚙
+      </div>
 
     </div>
 
 
-    <!-- BOTÓN PARADAS -->
+    <!-- =====================================
+         BOTÓN PARADAS MÓVIL
+    ====================================== -->
+
     <button
       id="open-stops"
       class="mobile-stops-button"
       aria-expanded="false"
       type="button"
     >
+
       <span>☷</span>
+
       Paradas
+
       <span id="stop-count"></span>
+
     </button>
 
 
-    <!-- PANEL DE PARADAS -->
+    <!-- =====================================
+         PANEL PARADAS
+    ====================================== -->
+
     <aside
       id="stops-panel"
       class="stops-panel"
@@ -102,12 +180,21 @@
 
       <div class="sheet-grabber"></div>
 
+
       <div class="panel-heading">
 
         <div>
-          <div class="eyebrow">EL RECORRIDO</div>
-          <h2>Paradas</h2>
+
+          <div class="eyebrow">
+            EL RECORRIDO
+          </div>
+
+          <h2>
+            Paradas
+          </h2>
+
         </div>
+
 
         <button
           id="close-stops"
@@ -120,16 +207,27 @@
 
       </div>
 
-      <ol id="stop-list" class="stop-list"></ol>
 
-      <p id="travel-status" class="travel-status">
+      <ol
+        id="stop-list"
+        class="stop-list"
+      ></ol>
+
+
+      <p
+        id="travel-status"
+        class="travel-status"
+      >
         Preparados para salir
       </p>
 
     </aside>
 
 
-    <!-- PANEL DE RECUERDO -->
+    <!-- =====================================
+         PANEL RECUERDO
+    ====================================== -->
+
     <section
       id="memory-panel"
       class="memory-panel"
@@ -138,11 +236,13 @@
 
       <div class="sheet-grabber"></div>
 
+
       <div class="memory-top">
 
         <span class="eyebrow">
           UN RECUERDO DEL VIAJE
         </span>
+
 
         <button
           id="close-memory"
@@ -155,7 +255,12 @@
 
       </div>
 
-      <div id="memory-content" class="memory-content"></div>
+
+      <div
+        id="memory-content"
+        class="memory-content"
+      ></div>
+
 
       <div class="memory-actions">
 
@@ -174,8 +279,12 @@
   </main>
 
 
+  <!-- JS -->
+
   <script src="/tolosa-granada/js/map.js"></script>
+
   <script src="/tolosa-granada/js/gallery.js"></script>
+
   <script src="/tolosa-granada/js/app.js"></script>
 
 </body>
