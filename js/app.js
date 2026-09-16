@@ -1,17 +1,16 @@
 (() => {
   "use strict";
 
-  const mapReady = () => Boolean(window.TripMap);
-
   const allStops = [
-    { id: "tolosa", name: "Tolosa", road: 0, direct: 0 },
-    { id: "aizkorri", name: "Aizkorri", road: 1, direct: null },
-    { id: "obanos", name: "Óbanos", road: 2, direct: null },
-    { id: "oropesa", name: "Oropesa", road: 3, direct: null },
-    { id: "benidorm", name: "Benidorm", road: 4, direct: null },
-    { id: "granada", name: "Granada", road: 5, direct: 1 }
+    { id: "tolosa", name: "Tolosa" },
+    { id: "aizkorri", name: "Aizkorri" },
+    { id: "obanos", name: "Óbanos" },
+    { id: "oropesa", name: "Oropesa" },
+    { id: "benidorm", name: "Benidorm" },
+    { id: "granada", name: "Granada" }
   ];
 
+  // Fracción aproximada del recorrido donde se encuentra cada parada.
   const roadFractions = [0, 0.13, 0.25, 0.53, 0.70, 1];
   const directFractions = [0, 1];
 
@@ -31,6 +30,8 @@
   let animationFrame = null;
   let isMoving = false;
 
+  const mapReady = () => Boolean(window.TripMap);
+
   function isMobile() {
     return window.matchMedia("(max-width: 760px)").matches;
   }
@@ -41,11 +42,15 @@
   }
 
   function closeMemory() {
-    window.TripGallery.closeMemory();
+    window.TripGallery?.closeMemory();
   }
 
   function getFractions() {
     return mode === "direct" ? directFractions : roadFractions;
+  }
+
+  function actualStopIndex(visibleIndex) {
+    return allStops.findIndex(stop => stop.id === visibleStops[visibleIndex]?.id);
   }
 
   function renderStops() {
@@ -78,7 +83,7 @@
       list.appendChild(item);
     });
 
-    stopCount.textContent = visibleStops.length;
+    stopCount.textContent = String(visibleStops.length);
   }
 
   function updateList() {
@@ -88,8 +93,9 @@
     });
   }
 
-  function positionVehicle(fraction) {
+  function updateVehiclePosition(fraction) {
     if (!mapReady()) return;
+
     const point = window.TripMap.positionAtRouteFraction(fraction);
     vehicle.style.left = `${point.x}px`;
     vehicle.style.top = `${point.y}px`;
@@ -97,12 +103,9 @@
 
   function updateProgress(fraction) {
     if (!mapReady()) return;
-    const route = mode === "direct"
-      ? window.TripMap.directRoute
-      : window.TripMap.roadRoute;
-    const scaled = Math.max(0, Math.min(1, fraction)) * (route.length - 1);
-    window.TripMap.setProgress(Math.min(route.length - 2, Math.floor(scaled)), scaled % 1);
-    positionVehicle(fraction);
+
+    window.TripMap.setProgress(fraction);
+    updateVehiclePosition(fraction);
   }
 
   function setStatus(text) {
@@ -112,31 +115,41 @@
   function openCurrentMemory() {
     const stop = visibleStops[currentStop];
     if (!stop) return;
+
     closeMemory();
-    window.TripGallery.openMemory(stop.id);
+    window.TripGallery?.openMemory(stop.id);
     setStatus(`Has llegado a ${stop.name}`);
   }
 
   function goToStop(index, showMemory) {
     if (!mapReady()) return;
-    if (animationFrame) cancelAnimationFrame(animationFrame);
+
+    if (animationFrame !== null) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    }
 
     currentStop = Math.max(0, Math.min(index, visibleStops.length - 1));
-    visited = [...new Set([...visited, currentStop])];
+    visited = [...new Set([...visited, actualStopIndex(currentStop)])];
+
     updateList();
+    updateProgress(getFractions()[currentStop]);
 
-    const fraction = getFractions()[currentStop];
-    updateProgress(fraction);
-    window.TripMap.updateStopStates(
-      mode === "direct" ? (currentStop === 0 ? 0 : 5) : allStops.findIndex(s => s.id === visibleStops[currentStop].id),
-      visited
-    );
+    window.TripMap.updateStopStates(actualStopIndex(currentStop), visited);
 
-    if (showMemory) openCurrentMemory();
-    else setStatus(currentStop === 0 ? "Preparados para salir" : `En ${visibleStops[currentStop].name}`);
+    if (showMemory) {
+      openCurrentMemory();
+    } else {
+      setStatus(currentStop === 0 ? "Preparados para salir" : `En ${visibleStops[currentStop].name}`);
+    }
+
+    continueButton.disabled = false;
+    continueButton.innerHTML = currentStop >= visibleStops.length - 1
+      ? 'Finalizar <span>✓</span>'
+      : 'Seguimos <span>→</span>';
   }
 
-  // Animación de velocidad constante, con pausa al llegar a cada parada.
+  // Desplazamiento suave. El avión tarda 1,5 segundos en llegar a Granada.
   function travelToStop(nextIndex) {
     if (!mapReady() || isMoving || nextIndex >= visibleStops.length) return;
 
@@ -146,10 +159,11 @@
     const fractions = getFractions();
     const start = fractions[currentStop];
     const end = fractions[nextIndex];
-    const distance = Math.abs(end - start);
 
-    // Duración orientativa: cada tramo se percibe como un desplazamiento real.
-    const duration = Math.max(2400, Math.min(9500, distance * 14500));
+    const duration = mode === "direct"
+      ? 1500
+      : Math.max(3500, Math.min(9000, Math.abs(end - start) * 14500));
+
     const startTime = performance.now();
     isMoving = true;
     vehicle.textContent = mode === "direct" ? "✈️" : "🚙";
@@ -157,7 +171,9 @@
 
     function frame(now) {
       const progress = Math.min(1, (now - startTime) / duration);
-      const eased = progress; // velocidad constante
+
+      // Suaviza el inicio y el final sin dar sensación de velocidad brusca.
+      const eased = progress * progress * (3 - 2 * progress);
       updateProgress(start + (end - start) * eased);
 
       if (progress < 1) {
@@ -168,27 +184,33 @@
       animationFrame = null;
       isMoving = false;
       currentStop = nextIndex;
-      visited = [...new Set([...visited, currentStop])];
-      updateList();
 
-      const actualStopIndex = allStops.findIndex(s => s.id === visibleStops[currentStop].id);
-      window.TripMap.updateStopStates(actualStopIndex, visited);
+      visited = [...new Set([...visited, actualStopIndex(currentStop)])];
+      updateList();
+      window.TripMap.updateStopStates(actualStopIndex(currentStop), visited);
+
       openCurrentMemory();
+
+      continueButton.disabled = false;
+      continueButton.innerHTML = currentStop >= visibleStops.length - 1
+        ? 'Finalizar <span>✓</span>'
+        : 'Seguimos <span>→</span>';
     }
 
     animationFrame = requestAnimationFrame(frame);
   }
 
   function chooseMode(nextMode) {
-    if (isMoving) {
+    if (isMoving && animationFrame !== null) {
       cancelAnimationFrame(animationFrame);
       animationFrame = null;
-      isMoving = false;
     }
 
+    isMoving = false;
     mode = nextMode;
     currentStop = 0;
     visited = [0];
+
     closeMemory();
     showStops(false);
 
@@ -200,30 +222,41 @@
       visibleStops = [allStops[0], allStops[5]];
       vehicle.textContent = "✈️";
       window.TripMap.drawRoute(window.TripMap.directRoute);
+      window.TripMap.setVisibleStops([0, 5]);
+      setStatus("Vuelo directo desde Tolosa");
     } else {
       visibleStops = allStops;
       vehicle.textContent = "🚙";
       window.TripMap.drawRoute(window.TripMap.roadRoute);
+      window.TripMap.setVisibleStops([0, 1, 2, 3, 4, 5]);
+      setStatus("Preparados para salir");
     }
 
     renderStops();
     goToStop(0, false);
-    setStatus(mode === "direct" ? "Salida desde Tolosa" : "Preparados para salir");
   }
 
   document.querySelectorAll(".mode-button").forEach(button => {
     button.addEventListener("click", () => chooseMode(button.dataset.mode));
   });
 
-  openStopsButton.addEventListener("click", () => showStops(!panel.classList.contains("open")));
+  openStopsButton.addEventListener("click", () => {
+    showStops(!panel.classList.contains("open"));
+  });
+
   closeStopsButton.addEventListener("click", () => showStops(false));
 
   continueButton.addEventListener("click", () => {
+    if (isMoving) return;
+
     if (currentStop >= visibleStops.length - 1) {
       closeMemory();
       setStatus("Viaje terminado. ¡Gracias por compartirlo!");
+      continueButton.disabled = true;
+      continueButton.innerHTML = 'Viaje terminado <span>✓</span>';
       return;
     }
+
     travelToStop(currentStop + 1);
   });
 
@@ -236,9 +269,10 @@
     }
   });
 
-  // Ajusta la posición del vehículo al cambiar el tamaño de la pantalla.
   window.addEventListener("resize", () => {
-    if (!isMoving && mapReady()) updateProgress(getFractions()[currentStop]);
+    if (!isMoving && mapReady()) {
+      updateProgress(getFractions()[currentStop]);
+    }
   });
 
   const waitForMap = setInterval(() => {
