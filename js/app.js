@@ -1,6 +1,11 @@
 (() => {
+
   "use strict";
 
+
+  /* =====================================================
+     PARADAS
+  ===================================================== */
 
   const allStops = [
 
@@ -37,16 +42,33 @@
   ];
 
 
-  let currentMode = "direct";
+  let currentMode =
+    "direct";
 
-  let currentStopIndex = 0;
 
-  let moving = false;
+  /*
+   * Empezamos en Tolosa.
+   */
 
-  let mapReady = false;
+  let currentStopIndex =
+    0;
 
-  let pendingMode = null;
 
+  let moving =
+    false;
+
+
+  let mapReady =
+    false;
+
+
+  let pendingMode =
+    null;
+
+
+  /* =====================================================
+     ELEMENTOS
+  ===================================================== */
 
   const startScreen =
     document.getElementById(
@@ -63,6 +85,18 @@
   const continueButton =
     document.getElementById(
       "continue-trip"
+    );
+
+
+  const memoriesButton =
+    document.getElementById(
+      "open-memories"
+    );
+
+
+  const tripActions =
+    document.getElementById(
+      "trip-actions"
     );
 
 
@@ -102,19 +136,23 @@
     );
 
 
-  /*
-   * PARADAS VISIBLES
-   */
+  /* =====================================================
+     PARADAS VISIBLES
+  ===================================================== */
 
   function getVisibleStops() {
 
     if (
-      currentMode === "direct"
+      currentMode ===
+      "direct"
     ) {
 
       return [
+
         allStops[0],
+
         allStops[5]
+
       ];
 
     }
@@ -125,14 +163,15 @@
   }
 
 
-  /*
-   * FRACCIONES
-   */
+  /* =====================================================
+     FRACCIONES
+  ===================================================== */
 
   function getFractions() {
 
     if (
-      currentMode === "direct"
+      currentMode ===
+      "direct"
     ) {
 
       return [
@@ -154,9 +193,31 @@
   }
 
 
-  /*
-   * LISTA DE PARADAS
-   */
+  /* =====================================================
+     MOSTRAR BOTONES
+  ===================================================== */
+
+  function showTripActions() {
+
+    tripActions.classList.remove(
+      "hidden"
+    );
+
+  }
+
+
+  function hideTripActions() {
+
+    tripActions.classList.add(
+      "hidden"
+    );
+
+  }
+
+
+  /* =====================================================
+     RENDER PARADAS
+  ===================================================== */
 
   function renderStops() {
 
@@ -239,9 +300,9 @@
   }
 
 
-  /*
-   * MARCAR PARADA
-   */
+  /* =====================================================
+     MARCAR PARADA ACTUAL
+  ===================================================== */
 
   function markCurrentStop() {
 
@@ -283,9 +344,9 @@
   }
 
 
-  /*
-   * CAMBIAR MODO
-   */
+  /* =====================================================
+     CAMBIAR DE VIAJE
+  ===================================================== */
 
   function chooseMode(
     mode
@@ -309,19 +370,22 @@
         : "direct";
 
 
+    /*
+     * Siempre volvemos a Tolosa
+     * al cambiar de viaje.
+     */
+
     currentStopIndex =
       0;
 
 
-    moving = false;
+    moving =
+      false;
 
 
     window.TripMap.setMode(
       currentMode
     );
-
-
-    renderStops();
 
 
     window.TripMap.setProgress(
@@ -334,36 +398,25 @@
     );
 
 
+    renderStops();
+
+
     travelStatus.textContent =
       currentMode === "real"
+
         ? "Salimos de Tolosa"
+
         : "Preparados para volar";
 
 
-    continueButton.disabled =
-      false;
+    updateContinueButton();
 
 
-    continueButton.innerHTML =
-      "Avanzamos <span>→</span>";
-
-
-    /*
-     * Cerramos recuerdos
-     * al cambiar de viaje.
-     */
-
-    if (
-      window.TripGallery
-    ) {
-
-      window.TripGallery.closeMemory();
-
-    }
+    showTripActions();
 
 
     /*
-     * Actualizar selector superior
+     * Actualizar selector
      */
 
     document
@@ -382,12 +435,64 @@
         }
       );
 
+
+    /*
+     * Cerrar recuerdos
+     */
+
+    if (
+      window.TripGallery
+    ) {
+
+      window.TripGallery
+        .closeMemory();
+
+    }
+
   }
 
 
-  /*
-   * ANIMACIÓN
-   */
+  /* =====================================================
+     BOTÓN AVANZAMOS
+  ===================================================== */
+
+  function updateContinueButton() {
+
+    const visibleStops =
+      getVisibleStops();
+
+
+    const isLast =
+      currentStopIndex >=
+      visibleStops.length - 1;
+
+
+    if (isLast) {
+
+      continueButton.disabled =
+        true;
+
+
+      continueButton.innerHTML =
+        "Hemos llegado <span>✓</span>";
+
+    } else {
+
+      continueButton.disabled =
+        false;
+
+
+      continueButton.innerHTML =
+        "<span>←</span> Avanzamos";
+
+    }
+
+  }
+
+
+  /* =====================================================
+     ANIMACIÓN
+  ===================================================== */
 
   function travelToStop(
     fromFraction,
@@ -399,17 +504,24 @@
     }
 
 
-    moving = true;
+    moving =
+      true;
 
 
     continueButton.disabled =
       true;
 
 
+    memoriesButton.disabled =
+      true;
+
+
     const duration =
       currentMode === "direct"
+
         ? 2200
-        : 1900;
+
+        : 2000;
 
 
     const start =
@@ -456,7 +568,8 @@
         (
           toFraction -
           fromFraction
-        ) * eased;
+        ) *
+        eased;
 
 
       window.TripMap
@@ -483,10 +596,11 @@
 
 
       /*
-       * HEMOS LLEGADO
+       * LLEGAMOS A LA PARADA
        */
 
-      moving = false;
+      moving =
+        false;
 
 
       currentStopIndex++;
@@ -510,52 +624,14 @@
         travelStatus.textContent =
           `Hemos llegado a ${arrived.name}`;
 
-
-        if (
-          window.TripGallery
-        ) {
-
-          window.TripGallery
-            .openMemory(
-              arrived.id
-            );
-
-        }
-
       }
 
 
-      /*
-       * TODAVÍA QUEDAN PARADAS
-       */
-
-      if (
-        currentStopIndex <
-        visibleStops.length - 1
-      ) {
-
-        continueButton.disabled =
-          false;
-
-      }
-
-      /*
-       * FIN
-       */
-
-      else {
-
-        continueButton.disabled =
-          true;
+      memoriesButton.disabled =
+        false;
 
 
-        continueButton.innerHTML =
-          "Hemos llegado <span>✓</span>";
-
-        travelStatus.textContent =
-          "Hemos llegado a Granada";
-
-      }
+      updateContinueButton();
 
     }
 
@@ -567,9 +643,9 @@
   }
 
 
-  /*
-   * AVANZAMOS
-   */
+  /* =====================================================
+     CLICK AVANZAMOS
+  ===================================================== */
 
   continueButton.addEventListener(
     "click",
@@ -593,6 +669,11 @@
 
       }
 
+
+      /*
+       * Cerramos recuerdos
+       * por si estuvieran abiertos.
+       */
 
       if (
         window.TripGallery
@@ -624,9 +705,62 @@
   );
 
 
-  /*
-   * SELECTOR SUPERIOR
-   */
+  /* =====================================================
+     CLICK RECUERDOS
+  ===================================================== */
+
+  memoriesButton.addEventListener(
+    "click",
+    () => {
+
+      if (moving) {
+        return;
+      }
+
+
+      const visibleStops =
+        getVisibleStops();
+
+
+      const current =
+        visibleStops[
+          currentStopIndex
+        ];
+
+
+      if (
+        !current
+      ) {
+        return;
+      }
+
+
+      /*
+       * Los botones desaparecen
+       * mientras vemos recuerdos.
+       */
+
+      hideTripActions();
+
+
+      if (
+        window.TripGallery
+      ) {
+
+        window.TripGallery
+          .openMemory(
+            current.id
+          );
+
+      }
+
+    }
+  );
+
+
+  /* =====================================================
+     SELECTOR SUPERIOR
+  ===================================================== */
 
   document
     .querySelectorAll(
@@ -650,9 +784,9 @@
     );
 
 
-  /*
-   * OPCIONES DE LA PANTALLA INICIAL
-   */
+  /* =====================================================
+     OPCIONES INICIALES
+  ===================================================== */
 
   document
     .querySelectorAll(
@@ -689,9 +823,9 @@
     );
 
 
-  /*
-   * BOTÓN INICIAL
-   */
+  /* =====================================================
+     BOTÓN INICIAL
+  ===================================================== */
 
   startButton.addEventListener(
     "click",
@@ -718,22 +852,22 @@
       }
 
 
-      chooseMode(
-        mode
+      startScreen.classList.add(
+        "hidden"
       );
 
 
-      startScreen.classList.add(
-        "hidden"
+      chooseMode(
+        mode
       );
 
     }
   );
 
 
-  /*
-   * PARADAS
-   */
+  /* =====================================================
+     PARADAS
+  ===================================================== */
 
   openStopsButton.addEventListener(
     "click",
@@ -771,9 +905,25 @@
   );
 
 
-  /*
-   * ESC
-   */
+  /* =====================================================
+     CUANDO SE CIERRA RECUERDOS
+  ===================================================== */
+
+  document.addEventListener(
+    "memory-closed",
+    () => {
+
+      showTripActions();
+
+      updateContinueButton();
+
+    }
+  );
+
+
+  /* =====================================================
+     ESC
+  ===================================================== */
 
   document.addEventListener(
     "keydown",
@@ -783,9 +933,7 @@
         event.key !==
         "Escape"
       ) {
-
         return;
-
       }
 
 
@@ -807,15 +955,16 @@
   );
 
 
-  /*
-   * MAPA LISTO
-   */
+  /* =====================================================
+     MAPA LISTO
+  ===================================================== */
 
   document.addEventListener(
     "trip-map-ready",
     () => {
 
-      mapReady = true;
+      mapReady =
+        true;
 
 
       window.TripMap.setMode(
@@ -833,6 +982,9 @@
       );
 
 
+      renderStops();
+
+
       if (pendingMode) {
 
         const mode =
@@ -843,13 +995,13 @@
           null;
 
 
-        chooseMode(
-          mode
+        startScreen.classList.add(
+          "hidden"
         );
 
 
-        startScreen.classList.add(
-          "hidden"
+        chooseMode(
+          mode
         );
 
       }
@@ -859,6 +1011,5 @@
       once: true
     }
   );
-
 
 })();
