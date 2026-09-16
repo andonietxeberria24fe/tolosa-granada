@@ -1,6 +1,11 @@
 (() => {
+
   "use strict";
 
+
+  /* =====================================================
+     RECUERDOS
+  ===================================================== */
 
   const memories = {
 
@@ -78,6 +83,10 @@
   };
 
 
+  /* =====================================================
+     ELEMENTOS
+  ===================================================== */
+
   const panel =
     document.getElementById(
       "memory-panel"
@@ -87,6 +96,12 @@
   const content =
     document.getElementById(
       "memory-content"
+    );
+
+
+  const location =
+    document.getElementById(
+      "memory-location"
     );
 
 
@@ -108,60 +123,25 @@
     );
 
 
-  let startY = 0;
-
-  let startTranslate = 0;
-
-  let dragging = false;
+  let startY =
+    0;
 
 
-  /*
-   * ALTURAS
-   */
-
-  function getCollapsedY() {
-
-    return Math.min(
-      430,
-      window.innerHeight * 0.58
-    );
-
-  }
+  let startTop =
+    0;
 
 
-  function getExpandedY() {
-
-    return 30;
-
-  }
+  let dragging =
+    false;
 
 
-  /*
-   * APLICAR POSICIÓN
-   */
+  /* =====================================================
+     ABRIR
+  ===================================================== */
 
-  function setDrawerPosition(
-    y,
-    animate = true
+  function openMemory(
+    id
   ) {
-
-    panel.style.transition =
-      animate
-        ? ""
-        : "none";
-
-
-    panel.style.transform =
-      `translateX(-50%) translateY(${y}px)`;
-
-  }
-
-
-  /*
-   * ABRIR
-   */
-
-  function openMemory(id) {
 
     const memory =
       memories[id];
@@ -174,6 +154,14 @@
 
     content.replaceChildren();
 
+
+    location.textContent =
+      memory.title;
+
+
+    /*
+     * TÍTULO
+     */
 
     const title =
       document.createElement(
@@ -190,6 +178,10 @@
     );
 
 
+    /*
+     * TEXTO
+     */
+
     const paragraph =
       document.createElement(
         "p"
@@ -204,6 +196,10 @@
       paragraph
     );
 
+
+    /*
+     * FOTOS
+     */
 
     if (
       memory.photos.length
@@ -255,8 +251,17 @@
     }
 
 
+    /*
+     * Abrir
+     */
+
     panel.classList.add(
       "open"
+    );
+
+
+    panel.classList.remove(
+      "expanded"
     );
 
 
@@ -267,44 +272,36 @@
 
 
     /*
-     * Arranca como cajón medio abierto.
+     * Posición inicial:
+     * cajón grande pero no completo.
      */
 
-    requestAnimationFrame(
-      () => {
-
-        setDrawerPosition(
-          getCollapsedY(),
-          true
-        );
-
-      }
-    );
+    panel.style.transform =
+      "translateX(-50%) translateY(18%)";
 
   }
 
 
-  /*
-   * SUBIR COMPLETAMENTE
-   */
+  /* =====================================================
+     EXPANDIR
+  ===================================================== */
 
   function expandMemory() {
-
-    setDrawerPosition(
-      getExpandedY(),
-      true
-    );
 
     panel.classList.add(
       "expanded"
     );
 
+
+    panel.style.transform =
+      "translateX(-50%) translateY(0)";
+
   }
 
 
-  /*
-   * CERRAR
-   */
+  /* =====================================================
+     CERRAR
+  ===================================================== */
 
   function closeMemory() {
 
@@ -323,158 +320,159 @@
     panel.style.transform =
       "";
 
-  }
 
+    /*
+     * Avisamos a app.js
+     * para que vuelvan los botones.
+     */
 
-  /*
-   * BOTÓN SUBIR
-   */
-
-  expandButton.addEventListener(
-    "click",
-    () => {
-
-      expandMemory();
-
-    }
-  );
-
-
-  /*
-   * CERRAR
-   */
-
-  closeButton.addEventListener(
-    "click",
-    () => {
-
-      closeMemory();
-
-    }
-  );
-
-
-  /*
-   * TOUCH / RATÓN
-   */
-
-  function pointerDown(event) {
-
-    if (
-      !panel.classList.contains(
-        "open"
+    document.dispatchEvent(
+      new CustomEvent(
+        "memory-closed"
       )
-    ) {
-
-      return;
-
-    }
-
-
-    dragging = true;
-
-
-    startY =
-      event.clientY;
-
-
-    const current =
-      panel
-        .getBoundingClientRect()
-        .top;
-
-
-    startTranslate =
-      current;
-
-
-    panel.style.transition =
-      "none";
-
-
-    grabber.setPointerCapture?.(
-      event.pointerId
     );
 
   }
 
 
-  function pointerMove(event) {
+  /* =====================================================
+     BOTÓN AMPLIAR
+  ===================================================== */
 
-    if (!dragging) {
-      return;
-    }
-
-
-    const delta =
-      event.clientY -
-      startY;
+  expandButton.addEventListener(
+    "click",
+    expandMemory
+  );
 
 
-    let next =
-      startTranslate +
-      delta;
+  /* =====================================================
+     BOTÓN X
+  ===================================================== */
+
+  closeButton.addEventListener(
+    "click",
+    closeMemory
+  );
 
 
-    const min =
-      getExpandedY();
+  /* =====================================================
+     ARRASTRAR CAJÓN
+  ===================================================== */
 
+  grabber.addEventListener(
+    "pointerdown",
+    event => {
 
-    const max =
-      getCollapsedY();
-
-
-    next =
-      Math.max(
-        min,
-        Math.min(
-          max,
-          next
+      if (
+        !panel.classList.contains(
+          "open"
         )
+      ) {
+        return;
+      }
+
+
+      dragging =
+        true;
+
+
+      startY =
+        event.clientY;
+
+
+      startTop =
+        panel.getBoundingClientRect()
+          .top;
+
+
+      panel.style.transition =
+        "none";
+
+
+      grabber.setPointerCapture(
+        event.pointerId
       );
 
-
-    panel.style.transform =
-      `translateX(-50%) translateY(${next}px)`;
-
-  }
+    }
+  );
 
 
-  function pointerUp() {
+  grabber.addEventListener(
+    "pointermove",
+    event => {
+
+      if (!dragging) {
+        return;
+      }
+
+
+      const delta =
+        event.clientY -
+        startY;
+
+
+      let next =
+        startTop +
+        delta;
+
+
+      const minTop =
+        0;
+
+
+      const maxTop =
+        window.innerHeight *
+        0.45;
+
+
+      next =
+        Math.max(
+          minTop,
+          Math.min(
+            maxTop,
+            next
+          )
+        );
+
+
+      panel.style.transform =
+        `translateX(-50%) translateY(${next}px)`;
+
+    }
+  );
+
+
+  function finishDrag() {
 
     if (!dragging) {
       return;
     }
 
 
-    dragging = false;
+    dragging =
+      false;
+
+
+    panel.style.transition =
+      "";
 
 
     const top =
-      panel
-        .getBoundingClientRect()
+      panel.getBoundingClientRect()
         .top;
 
 
-    const middle =
-      (
-        getExpandedY() +
-        getCollapsedY()
-      ) / 2;
-
-
     if (
-      top < middle
+      top <
+      window.innerHeight * 0.20
     ) {
 
       expandMemory();
 
     } else {
 
-      setDrawerPosition(
-        getCollapsedY(),
-        true
-      );
+      panel.style.transform =
+        "translateX(-50%) translateY(18%)";
 
     }
 
@@ -482,32 +480,20 @@
 
 
   grabber.addEventListener(
-    "pointerdown",
-    pointerDown
-  );
-
-
-  grabber.addEventListener(
-    "pointermove",
-    pointerMove
-  );
-
-
-  grabber.addEventListener(
     "pointerup",
-    pointerUp
+    finishDrag
   );
 
 
   grabber.addEventListener(
     "pointercancel",
-    pointerUp
+    finishDrag
   );
 
 
-  /*
-   * EXPORTAR
-   */
+  /* =====================================================
+     EXPORTAR
+  ===================================================== */
 
   window.TripGallery = {
 
