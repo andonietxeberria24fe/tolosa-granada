@@ -1,11 +1,19 @@
 (() => {
+
   "use strict";
 
-  const NS = "http://www.w3.org/2000/svg";
+
+  const NS =
+    "http://www.w3.org/2000/svg";
+
 
   const WIDTH = 1000;
   const HEIGHT = 700;
 
+
+  /* =====================================================
+     PARADAS
+  ===================================================== */
 
   const stops = [
 
@@ -54,9 +62,9 @@
   ];
 
 
-  /*
-   * PROYECCIÓN
-   */
+  /* =====================================================
+     PROYECCIÓN
+  ===================================================== */
 
   function project(lon, lat) {
 
@@ -75,21 +83,29 @@
   }
 
 
-  /*
-   * RUTA TERRESTRE
-   */
+  /* =====================================================
+     RUTA REAL
+  ===================================================== */
 
   const roadRoute = [
+
+    /* Tolosa */
 
     [-2.078, 43.135],
 
     [-2.12, 43.08],
     [-2.20, 43.02],
 
+
+    /* Aizkorri */
+
     [-2.330, 42.960],
 
     [-2.27, 42.88],
     [-2.12, 42.80],
+
+
+    /* Óbanos */
 
     [-1.785, 42.680],
 
@@ -107,14 +123,53 @@
     [0.05, 40.72],
     [0.10, 40.54],
 
+
+    /* OROPESA */
+
     [0.135, 40.092],
 
-    [0.08, 39.88],
-    [0.00, 39.68],
-    [-0.08, 39.48],
-    [-0.12, 39.28],
+
+    /*
+     * OROPESA → BENIDORM
+     *
+     * AQUÍ VA POR TIERRA.
+     *
+     * Se aleja de la costa,
+     * baja por el interior
+     * y vuelve hacia Benidorm.
+     */
+
+    [0.08, 39.98],
+
+    [-0.02, 39.86],
+
+    [-0.14, 39.72],
+
+    [-0.24, 39.56],
+
+    [-0.32, 39.40],
+
+    [-0.40, 39.22],
+
+    [-0.47, 39.04],
+
+    [-0.50, 38.88],
+
+    [-0.48, 38.75],
+
+    [-0.40, 38.65],
+
+    [-0.30, 38.59],
+
+    [-0.20, 38.56],
+
+
+    /* BENIDORM */
 
     [-0.122, 38.541],
+
+
+    /* BENIDORM → GRANADA */
 
     [-0.28, 38.43],
     [-0.48, 38.32],
@@ -133,6 +188,10 @@
   ];
 
 
+  /* =====================================================
+     RUTA DIRECTA
+  ===================================================== */
+
   const directRoute = [
 
     [-2.078, 43.135],
@@ -141,6 +200,10 @@
 
   ];
 
+
+  /* =====================================================
+     ÍNDICES DE PARADAS
+  ===================================================== */
 
   const roadStopRouteIndexes = {
 
@@ -152,9 +215,9 @@
 
     oropesa: 21,
 
-    benidorm: 26,
+    benidorm: 33,
 
-    granada: 38
+    granada: 45
 
   };
 
@@ -169,14 +232,18 @@
 
   let vehicleText = null;
 
-  let currentRoute = directRoute;
 
-  let currentMode = "direct";
+  let currentRoute =
+    directRoute;
 
 
-  /*
-   * CREAR SVG
-   */
+  let currentMode =
+    "direct";
+
+
+  /* =====================================================
+     CREAR ELEMENTO SVG
+  ===================================================== */
 
   function createSvgElement(
     tag,
@@ -190,17 +257,18 @@
       );
 
 
-    Object.entries(attributes)
-      .forEach(
-        ([key, value]) => {
+    Object.entries(
+      attributes
+    ).forEach(
+      ([key, value]) => {
 
-          element.setAttribute(
-            key,
-            value
-          );
+        element.setAttribute(
+          key,
+          value
+        );
 
-        }
-      );
+      }
+    );
 
 
     return element;
@@ -208,11 +276,13 @@
   }
 
 
-  /*
-   * RUTA → PATH
-   */
+  /* =====================================================
+     RUTA → PATH
+  ===================================================== */
 
-  function routeToPath(route) {
+  function routeToPath(
+    route
+  ) {
 
     return route
       .map(
@@ -238,11 +308,13 @@
   }
 
 
-  /*
-   * GEOJSON
-   */
+  /* =====================================================
+     GEOJSON
+  ===================================================== */
 
-  function drawGeoJson(data) {
+  function drawGeoJson(
+    data
+  ) {
 
     const group =
       createSvgElement(
@@ -312,7 +384,15 @@
     );
 
 
-    svg.appendChild(group);
+    /*
+     * Ponemos el mapa detrás
+     * de la ruta.
+     */
+
+    svg.insertBefore(
+      group,
+      svg.children[1]
+    );
 
   }
 
@@ -370,17 +450,16 @@
     );
 
 
-    parent.appendChild(path);
+    parent.appendChild(
+      path
+    );
 
   }
 
 
-  /*
-   * PARADAS
-   *
-   * SOLO CÍRCULOS.
-   * NO NOMBRES EN EL MAPA.
-   */
+  /* =====================================================
+     PUNTOS DE PARADA
+  ===================================================== */
 
   function drawStops() {
 
@@ -409,6 +488,7 @@
             {
               class:
                 `stop stop-${stop.id}`,
+
               "data-stop":
                 stop.id
             }
@@ -440,14 +520,16 @@
     );
 
 
-    svg.appendChild(group);
+    svg.appendChild(
+      group
+    );
 
   }
 
 
-  /*
-   * VEHÍCULO
-   */
+  /* =====================================================
+     VEHÍCULO
+  ===================================================== */
 
   function createVehicle() {
 
@@ -467,10 +549,8 @@
           x: 0,
           y: 0,
           class: "vehicle-emoji",
-          "text-anchor":
-            "middle",
-          "dominant-baseline":
-            "middle"
+          "text-anchor": "middle",
+          "dominant-baseline": "middle"
         }
       );
 
@@ -491,9 +571,9 @@
   }
 
 
-  /*
-   * TIPO DE VEHÍCULO
-   */
+  /* =====================================================
+     CAMBIAR AVIÓN / COCHE
+  ===================================================== */
 
   function setVehicleType(
     mode
@@ -512,55 +592,9 @@
   }
 
 
-  /*
-   * POSICIÓN EXACTA SOBRE EL PATH
-   */
-
-  function getPathPoint(
-    fraction
-  ) {
-
-    if (!routePath) {
-      return {
-        x: 0,
-        y: 0
-      };
-    }
-
-
-    const total =
-      routePath.getTotalLength();
-
-
-    const distance =
-      Math.max(
-        0,
-        Math.min(
-          total,
-          total * fraction
-        )
-      );
-
-
-    return routePath
-      .getPointAtLength(
-        distance
-      );
-
-  }
-
-
-  /*
-   * DIRECCIÓN DEL VEHÍCULO
-   *
-   * Si avanza hacia la izquierda:
-   * scaleX(-1)
-   *
-   * Si avanza hacia la derecha:
-   * scaleX(1)
-   *
-   * NO rotateX.
-   */
+  /* =====================================================
+     POSICIÓN DEL VEHÍCULO
+  ===================================================== */
 
   function positionVehicle(
     fraction
@@ -570,7 +604,9 @@
       !vehicle ||
       !routePath
     ) {
+
       return;
+
     }
 
 
@@ -596,9 +632,9 @@
 
     const sample =
       Math.max(
-        2,
+        3,
         Math.min(
-          10,
+          12,
           total * 0.01
         )
       );
@@ -622,11 +658,16 @@
       );
 
 
+    /*
+     * Mirar hacia la dirección
+     * del movimiento.
+     */
+
     const goingLeft =
       after.x < before.x;
 
 
-    const scale =
+    const scaleX =
       goingLeft
         ? -1
         : 1;
@@ -634,7 +675,7 @@
 
     vehicle.setAttribute(
       "transform",
-      `translate(${point.x} ${point.y}) scale(${scale} 1)`
+      `translate(${point.x} ${point.y}) scale(${scaleX} 1)`
     );
 
 
@@ -646,12 +687,9 @@
   }
 
 
-  /*
-   * PROGRESO
-   *
-   * EXACTAMENTE LA MISMA LONGITUD
-   * QUE USA EL VEHÍCULO.
-   */
+  /* =====================================================
+     PROGRESO
+  ===================================================== */
 
   function setProgress(
     fraction
@@ -661,7 +699,9 @@
       !routePath ||
       !progressPath
     ) {
+
       return;
+
     }
 
 
@@ -679,9 +719,9 @@
   }
 
 
-  /*
-   * FRACCIÓN DE PARADA
-   */
+  /* =====================================================
+     FRACCIÓN DE CADA PARADA
+  ===================================================== */
 
   function getRoadStopFraction(
     id
@@ -694,69 +734,54 @@
     if (
       index === undefined
     ) {
+
       return 0;
+
     }
 
 
+    const total =
+      routePath.getTotalLength();
+
+
     /*
-     * Calculamos usando la
-     * longitud real del SVG.
+     * Construimos la misma parte
+     * de la ruta hasta la parada.
      */
 
-    const route =
-      roadRoute;
-
-
-    const tempPath =
-      createSvgElement(
-        "path",
-        {
-          d:
-            routeToPath(route)
-        }
+    const partialRoute =
+      roadRoute.slice(
+        0,
+        index + 1
       );
 
 
-    const total =
-      tempPath.getTotalLength();
-
-
-    const stopRoute =
-      route
-        .slice(
-          0,
-          index + 1
-        );
-
-
-    const stopPath =
+    const partialPath =
       createSvgElement(
         "path",
         {
           d:
             routeToPath(
-              stopRoute
+              partialRoute
             )
         }
       );
 
 
-    const stopLength =
-      stopPath.getTotalLength();
+    const partialLength =
+      partialPath.getTotalLength();
 
 
-    return (
-      total === 0
-        ? 0
-        : stopLength / total
-    );
+    return total === 0
+      ? 0
+      : partialLength / total;
 
   }
 
 
-  /*
-   * MODO
-   */
+  /* =====================================================
+     CAMBIAR MODO
+  ===================================================== */
 
   function setMode(
     mode
@@ -796,8 +821,8 @@
 
 
     /*
-     * Solo Tolosa y Granada
-     * en modo directo.
+     * En directo:
+     * solamente Tolosa y Granada.
      */
 
     stops.forEach(
@@ -841,9 +866,9 @@
   }
 
 
-  /*
-   * CREAR MAPA
-   */
+  /* =====================================================
+     DIBUJAR MAPA
+  ===================================================== */
 
   async function drawMap() {
 
@@ -898,7 +923,7 @@
 
 
     /*
-     * EUROPA
+     * GEOJSON
      */
 
     try {
@@ -950,7 +975,9 @@
         {
           class:
             "travel-route",
-          fill: "none"
+
+          fill:
+            "none"
         }
       );
 
@@ -961,7 +988,9 @@
         {
           class:
             "travel-progress",
-          fill: "none"
+
+          fill:
+            "none"
         }
       );
 
@@ -982,7 +1011,7 @@
 
 
     /*
-     * PUNTOS
+     * PARADAS
      */
 
     drawStops();
@@ -1004,6 +1033,10 @@
     );
 
 
+    /*
+     * API
+     */
+
     window.TripMap = {
 
       ready: true,
@@ -1021,10 +1054,10 @@
       positionAtRouteFraction:
         positionVehicle,
 
-      getRoadStopFraction,
-
       moveVehicle:
-        positionVehicle
+        positionVehicle,
+
+      getRoadStopFraction
 
     };
 
