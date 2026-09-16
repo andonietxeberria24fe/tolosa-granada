@@ -1,88 +1,97 @@
 (() => {
-
   "use strict";
 
+  const NS = "http://www.w3.org/2000/svg";
 
-  /* =========================================
-     PARADAS
-  ========================================= */
+  const WIDTH = 1000;
+  const HEIGHT = 700;
 
-  const stops = {
-
-    tolosa: {
+  const stops = [
+    {
+      id: "tolosa",
       name: "Tolosa",
-      lat: 43.135,
-      lon: -2.078
+      lon: -2.078,
+      lat: 43.135
     },
-
-    aizkorri: {
+    {
+      id: "aizkorri",
       name: "Aizkorri",
-      lat: 42.960,
-      lon: -2.330
+      lon: -2.330,
+      lat: 42.960
     },
-
-    obanos: {
+    {
+      id: "obanos",
       name: "Óbanos",
-      lat: 42.680,
-      lon: -1.785
+      lon: -1.785,
+      lat: 42.680
     },
-
-    oropesa: {
+    {
+      id: "oropesa",
       name: "Oropesa",
-      lat: 40.092,
-      lon: 0.135
+      lon: 0.135,
+      lat: 40.092
     },
-
-    benidorm: {
+    {
+      id: "benidorm",
       name: "Benidorm",
-      lat: 38.541,
-      lon: -0.122
+      lon: -0.122,
+      lat: 38.541
     },
-
-    granada: {
+    {
+      id: "granada",
       name: "Granada",
-      lat: 37.177,
-      lon: -3.598
+      lon: -3.598,
+      lat: 37.177
     }
+  ];
 
-  };
-
-
-  /* =========================================
-     RUTA TERRESTRE
-  ========================================= */
 
   /*
-    Ruta visual aproximada.
+   * MISMA PROYECCIÓN PARA TODO:
+   * mapa
+   * ruta
+   * puntos
+   * etiquetas
+   * coche/avión
+   */
 
-    Está trazada por el interior de la península
-    para evitar que la línea atraviese el mar.
+  function project(lon, lat) {
 
-    Valencia NO es una parada.
-  */
+    const x =
+      ((lon + 6.2) / 10.2) * WIDTH;
+
+    const y =
+      ((44.8 - lat) / 9.0) * HEIGHT;
+
+    return { x, y };
+  }
+
+
+  /*
+   * RUTA TERRESTRE
+   */
 
   const roadRoute = [
-
     [-2.078, 43.135],
 
     [-2.12, 43.08],
     [-2.20, 43.02],
+
     [-2.330, 42.960],
 
     [-2.27, 42.88],
     [-2.12, 42.80],
+
     [-1.785, 42.680],
 
     [-1.60, 42.58],
     [-1.40, 42.45],
     [-1.22, 42.30],
     [-1.05, 42.12],
-
     [-0.88, 41.95],
     [-0.70, 41.78],
     [-0.55, 41.60],
     [-0.40, 41.43],
-
     [-0.28, 41.25],
     [-0.15, 41.08],
     [-0.02, 40.90],
@@ -111,226 +120,632 @@
     [-3.25, 37.20],
 
     [-3.598, 37.177]
-
   ];
 
 
-  /* =========================================
-     ÍNDICES EXACTOS DE LAS PARADAS
-  ========================================= */
+  /*
+   * VIAJE DIRECTO
+   */
+
+  const directRoute = [
+    [-2.078, 43.135],
+    [-3.598, 37.177]
+  ];
+
 
   const roadStopRouteIndexes = {
-
     tolosa: 0,
-
     aizkorri: 3,
-
     obanos: 6,
-
     oropesa: 21,
-
     benidorm: 26,
-
     granada: 38
-
   };
 
 
-  /* =========================================
-     RUTA DIRECTA
-  ========================================= */
-
-  const directRoute = [
-
-    [-2.078, 43.135],
-
-    [-1.30, 42.60],
-
-    [-0.50, 41.90],
-
-    [0.10, 41.00],
-
-    [0.00, 40.00],
-
-    [-0.50, 39.00],
-
-    [-1.20, 38.30],
-
-    [-2.00, 37.80],
-
-    [-2.80, 37.40],
-
-    [-3.598, 37.177]
-
-  ];
-
-
-  /* =========================================
-     CONFIGURACIÓN DEL MAPA
-  ========================================= */
-
-  const WIDTH = 1000;
-
-  const HEIGHT = 700;
-
-
-  function project(
-    lon,
-    lat
-  ) {
-
-    const x =
-      ((lon + 6.2) / 10.2) *
-      WIDTH;
-
-
-    const y =
-      ((44.8 - lat) / 9.0) *
-      HEIGHT;
-
-
-    return {
-      x,
-      y
-    };
-
-  }
-
-
-  /* =========================================
-     ELEMENTOS
-  ========================================= */
-
-  const mapElement =
-    document.getElementById("map");
-
-
-  const vehicle =
-    document.getElementById("vehicle");
-
-
   let svg = null;
-
   let routePath = null;
-
   let progressPath = null;
+  let vehicle = null;
 
-  let activeRoute =
-    roadRoute;
-
-
-  let currentMode =
-    "direct";
+  let currentMode = "direct";
+  let currentRoute = directRoute;
 
 
-  let ready =
-    false;
+  /*
+   * CREAR ELEMENTO SVG
+   */
 
+  function createSvgElement(tag, attributes = {}) {
 
-  /* =========================================
-     CREAR SVG
-  ========================================= */
+    const element =
+      document.createElementNS(NS, tag);
 
-  function createSvg() {
-
-    svg =
-      document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "svg"
-      );
-
-
-    svg.setAttribute(
-      "viewBox",
-      `0 0 ${WIDTH} ${HEIGHT}`
+    Object.entries(attributes).forEach(
+      ([key, value]) => {
+        element.setAttribute(key, value);
+      }
     );
 
-
-    svg.setAttribute(
-      "preserveAspectRatio",
-      "xMidYMid meet"
-    );
-
-
-    svg.setAttribute(
-      "class",
-      "trip-map-svg"
-    );
-
-
-    mapElement.replaceChildren(
-      svg
-    );
-
+    return element;
   }
 
 
-  /* =========================================
-     RUTA SVG
-  ========================================= */
+  /*
+   * RUTA → PATH
+   */
 
-  function routeToPath(
-    route
-  ) {
+  function routeToPath(route) {
 
     return route
-      .map(
-        (point, index) => {
+      .map((point, index) => {
 
-          const p =
-            project(
-              point[0],
-              point[1]
-            );
+        const p =
+          project(point[0], point[1]);
 
+        return `${index === 0 ? "M" : "L"} ${p.x} ${p.y}`;
 
-          return (
-            index === 0
-              ? `M ${p.x} ${p.y}`
-              : `L ${p.x} ${p.y}`
-          );
-
-        }
-      )
+      })
       .join(" ");
-
   }
 
 
-  /* =========================================
-     DIBUJAR MAPA
-  ========================================= */
+  /*
+   * LONGITUD DE SEGMENTOS
+   */
+
+  function routeLengths(route) {
+
+    const lengths = [0];
+
+    let total = 0;
+
+    for (let i = 1; i < route.length; i++) {
+
+      const a =
+        project(
+          route[i - 1][0],
+          route[i - 1][1]
+        );
+
+      const b =
+        project(
+          route[i][0],
+          route[i][1]
+        );
+
+      const distance =
+        Math.hypot(
+          b.x - a.x,
+          b.y - a.y
+        );
+
+      total += distance;
+
+      lengths.push(total);
+    }
+
+    return {
+      lengths,
+      total
+    };
+  }
+
+
+  /*
+   * GEOJSON
+   */
+
+  function drawGeoJson(data) {
+
+    const countriesGroup =
+      createSvgElement("g", {
+        class: "countries"
+      });
+
+    const features =
+      data.type === "FeatureCollection"
+        ? data.features
+        : [data];
+
+
+    features.forEach(feature => {
+
+      if (!feature.geometry) return;
+
+      const geometry =
+        feature.geometry;
+
+
+      if (geometry.type === "Polygon") {
+
+        drawPolygon(
+          geometry.coordinates,
+          countriesGroup
+        );
+
+      }
+
+
+      if (geometry.type === "MultiPolygon") {
+
+        geometry.coordinates.forEach(
+          polygon => {
+
+            drawPolygon(
+              polygon,
+              countriesGroup
+            );
+
+          }
+        );
+
+      }
+
+    });
+
+
+    svg.appendChild(countriesGroup);
+  }
+
+
+  function drawPolygon(
+    polygon,
+    parent
+  ) {
+
+    const path =
+      createSvgElement("path", {
+        class: "country"
+      });
+
+
+    let d = "";
+
+
+    polygon.forEach(ring => {
+
+      ring.forEach((coordinate, index) => {
+
+        const p =
+          project(
+            coordinate[0],
+            coordinate[1]
+          );
+
+
+        d +=
+          `${index === 0 ? "M" : "L"} ${p.x} ${p.y} `;
+
+      });
+
+      d += "Z ";
+
+    });
+
+
+    path.setAttribute("d", d);
+
+    parent.appendChild(path);
+  }
+
+
+  /*
+   * DIBUJAR PARADAS
+   */
+
+  function drawStops() {
+
+    const group =
+      createSvgElement("g", {
+        class: "stops"
+      });
+
+
+    const labelOffsets = {
+
+      tolosa: {
+        x: 15,
+        y: -13
+      },
+
+      aizkorri: {
+        x: 15,
+        y: 25
+      },
+
+      obanos: {
+        x: 15,
+        y: 22
+      },
+
+      oropesa: {
+        x: 15,
+        y: -13
+      },
+
+      benidorm: {
+        x: 15,
+        y: 22
+      },
+
+      granada: {
+        x: 15,
+        y: -13
+      }
+
+    };
+
+
+    stops.forEach(stop => {
+
+      const p =
+        project(
+          stop.lon,
+          stop.lat
+        );
+
+
+      const stopGroup =
+        createSvgElement("g", {
+          class: `stop stop-${stop.id}`,
+          "data-stop": stop.id
+        });
+
+
+      const circle =
+        createSvgElement("circle", {
+          cx: p.x,
+          cy: p.y,
+          r: 8,
+          class: "stop-dot"
+        });
+
+
+      const offset =
+        labelOffsets[stop.id];
+
+
+      const label =
+        createSvgElement("text", {
+          x: p.x + offset.x,
+          y: p.y + offset.y,
+          class: "stop-label"
+        });
+
+
+      label.textContent =
+        stop.name;
+
+
+      stopGroup.appendChild(circle);
+      stopGroup.appendChild(label);
+
+      group.appendChild(stopGroup);
+
+    });
+
+
+    svg.appendChild(group);
+  }
+
+
+  /*
+   * VEHÍCULO DENTRO DEL SVG
+   *
+   * Esto elimina el problema de escala
+   * que tenía el coche respecto al mapa.
+   */
+
+  function createVehicle() {
+
+    const group =
+      createSvgElement("g", {
+        id: "vehicle"
+      });
+
+
+    const text =
+      createSvgElement("text", {
+        x: 0,
+        y: 0,
+        class: "vehicle-emoji",
+        "text-anchor": "middle"
+      });
+
+
+    text.textContent = "✈️";
+
+
+    group.appendChild(text);
+
+    svg.appendChild(group);
+
+    vehicle = group;
+  }
+
+
+  /*
+   * CAMBIAR AVIÓN / COCHE
+   */
+
+  function setVehicleType(mode) {
+
+    if (!vehicle) return;
+
+    const text =
+      vehicle.querySelector(".vehicle-emoji");
+
+    if (!text) return;
+
+    text.textContent =
+      mode === "direct"
+        ? "✈️"
+        : "🚙";
+  }
+
+
+  /*
+   * POSICIÓN DEL VEHÍCULO
+   */
+
+  function positionAtRouteFraction(
+    fraction
+  ) {
+
+    const route =
+      currentRoute;
+
+
+    if (fraction <= 0) {
+
+      return project(
+        route[0][0],
+        route[0][1]
+      );
+
+    }
+
+
+    if (fraction >= 1) {
+
+      const last =
+        route[route.length - 1];
+
+      return project(
+        last[0],
+        last[1]
+      );
+
+    }
+
+
+    const info =
+      routeLengths(route);
+
+
+    const target =
+      info.total * fraction;
+
+
+    let segment = 1;
+
+
+    while (
+      segment < info.lengths.length &&
+      info.lengths[segment] < target
+    ) {
+
+      segment++;
+
+    }
+
+
+    const previousLength =
+      info.lengths[segment - 1];
+
+    const segmentLength =
+      info.lengths[segment] -
+      previousLength;
+
+
+    const local =
+      segmentLength === 0
+        ? 0
+        : (
+            target -
+            previousLength
+          ) / segmentLength;
+
+
+    const a =
+      route[segment - 1];
+
+    const b =
+      route[segment];
+
+
+    const lon =
+      a[0] +
+      (b[0] - a[0]) * local;
+
+
+    const lat =
+      a[1] +
+      (b[1] - a[1]) * local;
+
+
+    return project(lon, lat);
+  }
+
+
+  function moveVehicle(fraction) {
+
+    if (!vehicle) return;
+
+    const p =
+      positionAtRouteFraction(fraction);
+
+
+    vehicle.setAttribute(
+      "transform",
+      `translate(${p.x} ${p.y})`
+    );
+  }
+
+
+  /*
+   * FRACCIÓN DE CADA PARADA
+   */
+
+  function getRoadStopFraction(id) {
+
+    const index =
+      roadStopRouteIndexes[id];
+
+
+    if (index === undefined) {
+      return 0;
+    }
+
+
+    const info =
+      routeLengths(roadRoute);
+
+
+    return (
+      info.lengths[index] /
+      info.total
+    );
+  }
+
+
+  /*
+   * PROGRESO
+   */
+
+  function setProgress(fraction) {
+
+    if (!progressPath) return;
+
+    const length =
+      routePath.getTotalLength();
+
+
+    progressPath.style.strokeDasharray =
+      `${length}`;
+
+    progressPath.style.strokeDashoffset =
+      `${length * (1 - fraction)}`;
+  }
+
+
+  /*
+   * MODO
+   */
+
+  function setMode(mode) {
+
+    currentMode =
+      mode === "real"
+        ? "real"
+        : "direct";
+
+
+    currentRoute =
+      currentMode === "real"
+        ? roadRoute
+        : directRoute;
+
+
+    setVehicleType(currentMode);
+
+
+    routePath.setAttribute(
+      "d",
+      routeToPath(currentRoute)
+    );
+
+
+    progressPath.setAttribute(
+      "d",
+      routeToPath(currentRoute)
+    );
+
+
+    const visibleStops =
+      currentMode === "real"
+        ? stops
+        : [stops[0], stops[stops.length - 1]];
+
+
+    stops.forEach(stop => {
+
+      const element =
+        svg.querySelector(
+          `.stop-${stop.id}`
+        );
+
+
+      if (!element) return;
+
+
+      element.style.display =
+        visibleStops.some(
+          item => item.id === stop.id
+        )
+          ? ""
+          : "none";
+
+    });
+
+
+    setProgress(0);
+    moveVehicle(0);
+  }
+
+
+  /*
+   * CREAR MAPA
+   */
 
   async function drawMap() {
 
-    createSvg();
+    const map =
+      document.getElementById("map");
+
+
+    svg =
+      createSvgElement("svg", {
+        viewBox: `0 0 ${WIDTH} ${HEIGHT}`,
+        preserveAspectRatio: "xMidYMid meet",
+        "aria-hidden": "true"
+      });
+
+
+    map.replaceChildren(svg);
 
 
     /*
-      Capa del mapa.
-    */
+     * FONDO
+     */
 
-    const mapLayer =
-      document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "g"
-      );
-
-
-    mapLayer.setAttribute(
-      "class",
-      "countries"
-    );
+    const background =
+      createSvgElement("rect", {
+        x: 0,
+        y: 0,
+        width: WIDTH,
+        height: HEIGHT,
+        class: "map-background"
+      });
 
 
-    svg.appendChild(
-      mapLayer
-    );
+    svg.appendChild(background);
 
 
     /*
-      GeoJSON.
-    */
+     * MAPA DE EUROPA
+     */
 
     try {
 
@@ -340,25 +755,19 @@
         );
 
 
-      if (
-        response.ok
-      ) {
+      if (response.ok) {
 
         const geojson =
           await response.json();
 
-
-        drawGeoJson(
-          geojson,
-          mapLayer
-        );
+        drawGeoJson(geojson);
 
       }
 
     } catch (error) {
 
       console.warn(
-        "No se pudo cargar el GeoJSON.",
+        "No se pudo cargar europe.geojson",
         error
       );
 
@@ -366,664 +775,85 @@
 
 
     /*
-      Ruta.
-    */
+     * RUTA
+     */
+
+    const routeGroup =
+      createSvgElement("g", {
+        class: "routes"
+      });
+
 
     routePath =
-      document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
+      createSvgElement("path", {
+        class: "travel-route",
+        fill: "none"
+      });
 
-
-    routePath.setAttribute(
-      "class",
-      "travel-route"
-    );
-
-
-    routePath.setAttribute(
-      "d",
-      routeToPath(
-        activeRoute
-      )
-    );
-
-
-    svg.appendChild(
-      routePath
-    );
-
-
-    /*
-      Progreso.
-    */
 
     progressPath =
-      document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
+      createSvgElement("path", {
+        class: "travel-progress",
+        fill: "none"
+      });
 
 
-    progressPath.setAttribute(
-      "class",
-      "travel-progress"
-    );
+    routeGroup.appendChild(routePath);
+    routeGroup.appendChild(progressPath);
 
-
-    progressPath.setAttribute(
-      "d",
-      routeToPath(
-        activeRoute
-      )
-    );
-
-
-    svg.appendChild(
-      progressPath
-    );
+    svg.appendChild(routeGroup);
 
 
     /*
-      Círculos y etiquetas.
-    */
+     * PARADAS
+     */
 
     drawStops();
 
 
-    ready =
-      true;
-
-
-    window.TripMap.ready =
-      true;
-
-
-    window.dispatchEvent(
-      new Event(
-        "trip-map-ready"
-      )
-    );
-
-  }
-
-
-  /* =========================================
-     GEOJSON
-  ========================================= */
-
-  function drawGeoJson(
-    geojson,
-    layer
-  ) {
-
-    if (
-      !geojson ||
-      !geojson.features
-    ) {
-      return;
-    }
-
-
-    geojson.features.forEach(
-      feature => {
-
-        const geometry =
-          feature.geometry;
-
-
-        if (!geometry) {
-          return;
-        }
-
-
-        if (
-          geometry.type ===
-          "Polygon"
-        ) {
-
-          geometry.coordinates
-            .forEach(
-              polygon => {
-
-                drawPolygon(
-                  polygon,
-                  layer
-                );
-
-              }
-            );
-
-        }
-
-
-        if (
-          geometry.type ===
-          "MultiPolygon"
-        ) {
-
-          geometry.coordinates
-            .forEach(
-              multiPolygon => {
-
-                multiPolygon.forEach(
-                  polygon => {
-
-                    drawPolygon(
-                      polygon,
-                      layer
-                    );
-
-                  }
-                );
-
-              }
-            );
-
-        }
-
-      }
-    );
-
-  }
-
-
-  function drawPolygon(
-    coordinates,
-    layer
-  ) {
-
-    const path =
-      document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-
-
-    const d =
-      coordinates
-        .map(
-          (point, index) => {
-
-            const p =
-              project(
-                point[0],
-                point[1]
-              );
-
-
-            return (
-              index === 0
-                ? `M ${p.x} ${p.y}`
-                : `L ${p.x} ${p.y}`
-            );
-
-          }
-        )
-        .join(" ") +
-      " Z";
-
-
-    path.setAttribute(
-      "d",
-      d
-    );
-
-
-    path.setAttribute(
-      "class",
-      "country"
-    );
-
-
-    layer.appendChild(
-      path
-    );
-
-  }
-
-
-  /* =========================================
-     CÍRCULOS Y ETIQUETAS
-  ========================================= */
-
-  function drawStops() {
-
-    const layer =
-      document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "g"
-      );
-
-
-    layer.setAttribute(
-      "class",
-      "stop-layer"
-    );
-
-
-    svg.appendChild(
-      layer
-    );
-
-
-    const labelOffsets = {
-
-      tolosa: {
-        x: 14,
-        y: -12
-      },
-
-      aizkorri: {
-        x: 14,
-        y: -12
-      },
-
-      obanos: {
-        x: 14,
-        y: 18
-      },
-
-      oropesa: {
-        x: 14,
-        y: -12
-      },
-
-      benidorm: {
-        x: 14,
-        y: 18
-      },
-
-      granada: {
-        x: 14,
-        y: -12
-      }
-
-    };
-
-
-    Object.entries(
-      stops
-    ).forEach(
-      ([id, stop]) => {
-
-        const point =
-          project(
-            stop.lon,
-            stop.lat
-          );
-
-
-        /*
-          CÍRCULO
-        */
-
-        const circle =
-          document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "circle"
-          );
-
-
-        circle.setAttribute(
-          "cx",
-          point.x
-        );
-
-
-        circle.setAttribute(
-          "cy",
-          point.y
-        );
-
-
-        circle.setAttribute(
-          "r",
-          "7"
-        );
-
-
-        circle.setAttribute(
-          "class",
-          "stop-dot"
-        );
-
-
-        circle.dataset.stopId =
-          id;
-
-
-        layer.appendChild(
-          circle
-        );
-
-
-        /*
-          ETIQUETA
-
-          Siempre desplazada del círculo.
-        */
-
-        const label =
-          document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "text"
-          );
-
-
-        const offset =
-          labelOffsets[id] || {
-            x: 14,
-            y: -12
-          };
-
-
-        label.setAttribute(
-          "x",
-          point.x + offset.x
-        );
-
-
-        label.setAttribute(
-          "y",
-          point.y + offset.y
-        );
-
-
-        label.setAttribute(
-          "class",
-          "stop-label"
-        );
-
-
-        label.setAttribute(
-          "text-anchor",
-          "start"
-        );
-
-
-        label.textContent =
-          stop.name;
-
-
-        layer.appendChild(
-          label
-        );
-
-      }
-    );
-
-  }
-
-
-  /* =========================================
-     CAMBIAR MODO
-  ========================================= */
-
-  function setMode(
-    mode
-  ) {
-
-    currentMode =
-      mode;
-
-
-    if (
-      mode === "direct"
-    ) {
-
-      activeRoute =
-        directRoute;
-
-    } else {
-
-      activeRoute =
-        roadRoute;
-
-    }
-
-
-    if (
-      routePath
-    ) {
-
-      routePath.setAttribute(
-        "d",
-        routeToPath(
-          activeRoute
-        )
-      );
-
-    }
-
-
-    if (
-      progressPath
-    ) {
-
-      progressPath.setAttribute(
-        "d",
-        routeToPath(
-          activeRoute
-        )
-      );
-
-    }
+    /*
+     * VEHÍCULO
+     */
+
+    createVehicle();
 
 
     /*
-      Actualizamos visibilidad
-      de los puntos.
-    */
+     * MODO INICIAL
+     */
 
-    if (svg) {
-
-      svg
-        .querySelectorAll(
-          ".stop-dot, .stop-label"
-        )
-        .forEach(
-          element => {
-
-            const id =
-              element.dataset.stopId;
+    setMode("direct");
 
 
-            /*
-              En modo directo solo
-              mostramos Tolosa y Granada.
-            */
+    window.TripMap = {
 
-            const visible =
-              mode === "direct"
+      ready: true,
 
-                ? (
-                    id === "tolosa" ||
-                    id === "granada"
-                  )
+      stops,
 
-                : true;
+      roadRoute,
 
+      directRoute,
 
-            element.style.display =
-              visible
-                ? ""
-                : "none";
+      setMode,
 
-          }
-        );
+      setProgress,
 
-    }
+      positionAtRouteFraction,
 
-  }
+      getRoadStopFraction,
+
+      moveVehicle
+
+    };
 
 
-  /* =========================================
-     FRACCIÓN DE UNA PARADA
-  ========================================= */
-
-  function getRoadStopFraction(
-    stopId
-  ) {
-
-    const index =
-      roadStopRouteIndexes[
-        stopId
-      ];
-
-
-    if (
-      index === undefined
-    ) {
-
-      return 0;
-
-    }
-
-
-    return (
-      index /
-      (roadRoute.length - 1)
+    document.dispatchEvent(
+      new CustomEvent("trip-map-ready")
     );
 
   }
 
-
-  /* =========================================
-     POSICIÓN EN LA RUTA
-  ========================================= */
-
-  function positionAtRouteFraction(
-    fraction
-  ) {
-
-    if (
-      !activeRoute ||
-      activeRoute.length < 2
-    ) {
-
-      return null;
-
-    }
-
-
-    fraction =
-      Math.max(
-        0,
-        Math.min(
-          1,
-          fraction
-        )
-      );
-
-
-    const scaled =
-      fraction *
-      (activeRoute.length - 1);
-
-
-    const index =
-      Math.min(
-        activeRoute.length - 2,
-        Math.floor(
-          scaled
-        )
-      );
-
-
-    const t =
-      scaled - index;
-
-
-    const a =
-      project(
-        activeRoute[index][0],
-        activeRoute[index][1]
-      );
-
-
-    const b =
-      project(
-        activeRoute[index + 1][0],
-        activeRoute[index + 1][1]
-      );
-
-
-    return {
-
-      x:
-        a.x +
-        (b.x - a.x) *
-        t,
-
-      y:
-        a.y +
-        (b.y - a.y) *
-        t
-
-    };
-
-  }
-
-
-  /* =========================================
-     PROGRESO
-  ========================================= */
-
-  function setProgress(
-    fraction
-  ) {
-
-    if (
-      !progressPath
-    ) {
-      return;
-    }
-
-
-    const length =
-      progressPath.getTotalLength();
-
-
-    progressPath.style.strokeDasharray =
-      `${length}`;
-
-
-    progressPath.style.strokeDashoffset =
-      `${length * (1 - fraction)}`;
-
-  }
-
-
-  /* =========================================
-     API
-  ========================================= */
-
-  window.TripMap = {
-
-    ready: false,
-
-    setMode,
-
-    setProgress,
-
-    getRoadStopFraction,
-
-    positionAtRouteFraction,
-
-    stops,
-
-    roadRoute,
-
-    directRoute
-
-  };
-
-
-  /* =========================================
-     ARRANCAR
-  ========================================= */
 
   drawMap();
 
