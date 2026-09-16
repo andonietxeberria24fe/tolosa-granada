@@ -1,1 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tolosa — Granada</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Tolosa <span>→</span> Granada</h1>
+    <p>Un viaje, muchos recuerdos</p>
+  </header>
 
+  <main>
+    <nav class="modes" aria-label="Formas de ver el viaje">
+      <button id="direct-mode" class="mode-button active">
+        Tolosa → Granada
+      </button>
+      <button id="road-mode" class="mode-button">
+        El viaje de verdad
+      </button>
+    </nav>
+
+    <section class="map-card">
+      <div id="map" aria-label="Mapa del recorrido"></div>
+      <p id="status">Preparando el recorrido…</p>
+      <button id="next-stop" class="next-button">Seguimos →</button>
+    </section>
+
+    <section id="memory-panel" class="memory-panel" hidden>
+      <button id="close-memory" class="close-button" aria-label="Cerrar">×</button>
+      <p class="eyebrow">PARADA</p>
+      <h2 id="memory-title"></h2>
+      <div id="memory-content"></div>
+    </section>
+  </main>
+
+  <script src="js/map.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
