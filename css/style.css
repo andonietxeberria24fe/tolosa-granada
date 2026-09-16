@@ -1,162 +1,94 @@
-/* =========================================================
-   BASE
-========================================================= */
-
 :root {
-  --background: #f7f8fa;
-  --surface: #ffffff;
-  --surface-soft: #f2f3f5;
+  color-scheme: light;
 
-  --text: #111111;
-  --muted: #777b80;
-  --light-text: #9a9da1;
+  --bg: #f7f8fa;
+  --panel: rgba(255, 255, 255, 0.94);
 
-  --line: #dedfe2;
-  --line-dark: #c8cbcf;
+  --ink: #202630;
+  --muted: #858c96;
 
-  --black: #111111;
+  --line: #e5e8ed;
 
-  --radius-small: 12px;
-  --radius-medium: 18px;
-  --radius-large: 26px;
+  --accent: #64748b;
 
-  --shadow-soft:
-    0 8px 30px rgba(0, 0, 0, 0.08);
-
-  --shadow-card:
-    0 16px 50px rgba(0, 0, 0, 0.12);
+  --shadow:
+    0 12px 42px rgba(30, 42, 60, 0.13);
 }
+
 
 * {
   box-sizing: border-box;
 }
 
+
 html,
 body {
-  margin: 0;
   width: 100%;
   height: 100%;
+  margin: 0;
 }
 
+
 body {
-  background: var(--background);
-  color: var(--text);
+  overflow: hidden;
+
+  background: var(--bg);
+  color: var(--ink);
 
   font-family:
     -apple-system,
     BlinkMacSystemFont,
-    "SF Pro Display",
-    "SF Pro Text",
-    "Helvetica Neue",
-    Arial,
+    "Segoe UI",
     sans-serif;
 
-  overflow: hidden;
-
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
 
 button {
-  -webkit-tap-highlight-color: transparent;
+  font: inherit;
+  cursor: pointer;
 }
 
+
 button:focus-visible {
-  outline: 2px solid #111;
+  outline: 3px solid #9aa9bd;
   outline-offset: 3px;
 }
 
 
-/* =========================================================
+/* =====================================================
    APP
-========================================================= */
+===================================================== */
 
 #app {
   position: relative;
 
   width: 100%;
-  height: 100dvh;
+  height: 100%;
 
-  overflow: hidden;
+  min-height: 520px;
 }
 
 
-/* =========================================================
-   HEADER
-========================================================= */
+/* =====================================================
+   MAPA
+===================================================== */
 
-.header {
-  position: fixed;
-
-  top: 0;
-  left: 0;
-
-  z-index: 20;
-
-  padding:
-    28px
-    30px;
-
-  pointer-events: none;
-}
-
-.eyebrow {
-  font-size: 11px;
-  line-height: 1.2;
-
-  font-weight: 700;
-  letter-spacing: 0.12em;
-
-  color: var(--muted);
-
-  text-transform: uppercase;
-}
-
-.header h1 {
-  margin: 6px 0 0;
-
-  font-size: 42px;
-  line-height: 1;
-
-  font-weight: 700;
-  letter-spacing: -0.045em;
-}
-
-.header h1 span {
-  display: inline-block;
-
-  margin-left: 3px;
-
-  font-size: 24px;
-}
-
-
-/* =========================================================
-   MAP
-========================================================= */
-
-#map-container {
+#map-container,
+#map {
   position: absolute;
 
   inset: 0;
 
-  width: 100%;
-  height: 100%;
-
   overflow: hidden;
 }
 
+
 #map {
-  width: 100%;
-  height: 100%;
+  background: #f7f8fa;
 }
+
 
 #map svg {
   display: block;
@@ -166,1234 +98,911 @@ button:focus-visible {
 }
 
 
-/* =========================================================
-   MAP BACKGROUND
-========================================================= */
+/* =====================================================
+   CABECERA
+===================================================== */
 
-.map-background {
-  fill: #f7f8fa;
+.header {
+  position: absolute;
+
+  z-index: 5;
+
+  top: 25px;
+  left: 30px;
+
+  pointer-events: none;
 }
 
 
-/* =========================================================
-   COUNTRIES
-========================================================= */
+.eyebrow {
+  color: var(--muted);
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 0.16em;
+
+  text-transform: uppercase;
+}
+
+
+.header h1 {
+  margin: 5px 0 0;
+
+  font-size:
+    clamp(24px, 3vw, 34px);
+
+  letter-spacing: -0.06em;
+
+  font-weight: 750;
+}
+
+
+.header h1 span {
+  color: #aeb8c5;
+
+  font-size: 0.65em;
+}
+
+
+/* =====================================================
+   SELECTOR DE VIAJE
+===================================================== */
+
+.mode-switch {
+  position: absolute;
+
+  z-index: 8;
+
+  top: 28px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  display: flex;
+
+  gap: 4px;
+
+  padding: 5px;
+
+  border:
+    1px solid
+    rgba(30, 42, 60, 0.08);
+
+  border-radius: 999px;
+
+  background:
+    rgba(255, 255, 255, 0.88);
+
+  box-shadow:
+    0 4px 18px
+    rgba(30, 42, 60, 0.07);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+
+.mode-button {
+  border: 0;
+
+  border-radius: 999px;
+
+  padding: 10px 16px;
+
+  background: transparent;
+
+  color: #697381;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+
+.mode-button.active {
+  background: var(--accent);
+
+  color: white;
+}
+
+
+.mode-button:active {
+  transform: scale(0.98);
+}
+
+
+/* =====================================================
+   MAPA / PAÍSES
+===================================================== */
 
 .country {
-  fill: #e5e8e8;
+  fill: #e9edf2;
 
-  stroke: #c8cdcd;
-  stroke-width: 0.7;
+  stroke: #cbd3dd;
 
-  vector-effect: non-scaling-stroke;
+  stroke-width: 0.65;
 }
 
 
-/* =========================================================
-   ROUTE
-========================================================= */
+/* =====================================================
+   RUTA
+===================================================== */
 
 .travel-route {
   fill: none;
 
-  stroke: #b9bdc1;
+  stroke: #aab6c5;
+
   stroke-width: 3;
 
   stroke-linecap: round;
   stroke-linejoin: round;
-
-  stroke-dasharray: 5 7;
-
-  opacity: 0.9;
-
-  vector-effect: non-scaling-stroke;
 }
 
 
 /*
- * LÍNEA NEGRA DE PROGRESO
+ * Línea que ya hemos recorrido.
  *
- * No debe tener animación propia.
- * La mueve app.js junto al vehículo.
+ * NO tiene transición CSS.
+ * app.js la actualiza al mismo tiempo
+ * que el vehículo.
  */
 
-.travel-progress {
+.route-progress {
   fill: none;
 
   stroke: #111111;
-  stroke-width: 4;
+
+  stroke-width: 3.5;
 
   stroke-linecap: round;
   stroke-linejoin: round;
-
-  vector-effect: non-scaling-stroke;
 
   transition: none !important;
   animation: none !important;
 }
 
 
-/* =========================================================
-   PARADAS
-========================================================= */
-
-.stop {
-  pointer-events: none;
-}
+/* =====================================================
+   PUNTOS
+===================================================== */
 
 .stop-dot {
-  fill: #ffffff;
+  fill: white;
 
-  stroke: #111111;
-  stroke-width: 2;
+  stroke: #9ba8b8;
 
-  vector-effect: non-scaling-stroke;
+  stroke-width: 2.5;
 }
 
 
-/*
- * No mostramos nombres sobre el mapa.
- * Los nombres aparecen en el panel de Paradas.
- */
+.stop-dot.visited {
+  fill: #64748b;
 
-
-/* =========================================================
-   VEHÍCULO
-========================================================= */
-
-#svg-trip-vehicle {
-  pointer-events: none;
-
-  transform-origin: center;
-}
-
-.vehicle-emoji {
-  font-size: 38px;
-
-  font-family:
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Noto Color Emoji",
-    sans-serif;
-
-  dominant-baseline: middle;
-
-  user-select: none;
+  stroke: #64748b;
 }
 
 
-/*
- * Compatibilidad por si todavía existe
- * el antiguo vehículo HTML.
- */
+.stop-dot.current {
+  fill: white;
+
+  stroke: #344256;
+
+  stroke-width: 4;
+}
+
+
+/* =====================================================
+   COCHE / AVIÓN
+===================================================== */
 
 #vehicle {
-  pointer-events: none;
-}
+  position: absolute;
 
+  z-index: 4;
 
-/* =========================================================
-   PANTALLA INICIAL
-========================================================= */
+  left: 0;
+  top: 0;
 
-.start-screen {
-  position: fixed;
-
-  inset: 0;
-
-  z-index: 100;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  padding: 24px;
-
-  background:
-    rgba(247, 248, 250, 0.78);
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-.start-screen.hidden {
-  display: none;
-}
-
-.start-card {
-  width: min(100%, 500px);
-
-  padding: 34px;
-
-  background: rgba(255, 255, 255, 0.96);
-
-  border:
-    1px solid rgba(0, 0, 0, 0.06);
-
-  border-radius: var(--radius-large);
-
-  box-shadow: var(--shadow-card);
-}
-
-.start-eyebrow {
-  margin-bottom: 10px;
-
-  font-size: 11px;
-  line-height: 1.2;
-
-  font-weight: 700;
-  letter-spacing: 0.12em;
-
-  color: var(--muted);
-
-  text-transform: uppercase;
-}
-
-.start-card h2 {
-  margin: 0 0 24px;
-
-  font-size: 34px;
-  line-height: 1.05;
-
-  letter-spacing: -0.04em;
-}
-
-
-/* =========================================================
-   OPCIONES DE VIAJE
-========================================================= */
-
-.trip-options {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 10px;
-
-  margin-bottom: 18px;
-}
-
-.trip-option {
-  position: relative;
-
-  display: flex;
-
-  align-items: center;
-
-  width: 100%;
-
-  min-height: 76px;
-
-  padding: 14px 16px;
-
-  border: 1px solid var(--line);
-
-  border-radius: 18px;
-
-  background: #ffffff;
-
-  color: var(--text);
-
-  text-align: left;
-
-  cursor: pointer;
-
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.trip-option:hover {
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 5px 18px rgba(0, 0, 0, 0.06);
-}
-
-.trip-option:active {
-  transform: scale(0.99);
-}
-
-.trip-option.selected {
-  border-color: #111111;
-
-  background: #f5f5f5;
-
-  box-shadow:
-    inset 0 0 0 1px #111111;
-}
-
-.trip-option-icon {
-  flex: 0 0 auto;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  width: 42px;
-  height: 42px;
-
-  margin-right: 13px;
-
-  font-size: 24px;
-
-  border-radius: 13px;
-
-  background: #f1f2f3;
-}
-
-.trip-option-text {
-  min-width: 0;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 4px;
-}
-
-.trip-option-text strong {
-  font-size: 15px;
-  line-height: 1.2;
-
-  font-weight: 650;
-}
-
-.trip-option-text small {
-  font-size: 12px;
-  line-height: 1.3;
-
-  color: var(--muted);
-}
-
-.trip-check {
-  margin-left: auto;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  width: 24px;
-  height: 24px;
-
-  border-radius: 50%;
-
-  background: #111111;
-
-  color: #ffffff;
-
-  font-size: 13px;
-  font-weight: 700;
-
-  opacity: 0;
-
-  transform: scale(0.7);
-
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-.trip-option.selected .trip-check {
-  opacity: 1;
-
-  transform: scale(1);
-}
-
-
-/* =========================================================
-   BOTÓN PRINCIPAL
-========================================================= */
-
-.primary-button {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  gap: 12px;
-
-  width: 100%;
-
-  min-height: 52px;
-
-  padding: 0 20px;
-
-  border: 0;
-
-  border-radius: 999px;
-
-  background: #111111;
-
-  color: #ffffff;
-
-  font-size: 15px;
-  font-weight: 650;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.16);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    opacity 0.2s ease;
-}
-
-.primary-button:hover {
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.18);
-}
-
-.primary-button:active {
-  transform: scale(0.98);
-}
-
-.primary-button span {
-  font-size: 20px;
+  font-size: 27px;
 
   line-height: 1;
+
+  transform:
+    translate(-50%, -70%);
+
+  filter:
+    drop-shadow(
+      0 3px 3px
+      rgba(0, 0, 0, 0.16)
+    );
+
+  pointer-events: none;
+
+  will-change:
+    left,
+    top;
+
+  transition:
+    left 0.08s linear,
+    top 0.08s linear;
 }
 
 
-/* =========================================================
-   BOTÓN PARADAS MÓVIL
-========================================================= */
-
-.mobile-stops-button {
-  position: fixed;
-
-  left: 50%;
-  bottom: 20px;
-
-  z-index: 30;
-
-  display: none;
-
-  align-items: center;
-  justify-content: center;
-
-  gap: 7px;
-
-  min-height: 48px;
-
-  padding: 0 20px;
-
-  border: 0;
-
-  border-radius: 999px;
-
-  background:
-    rgba(255, 255, 255, 0.94);
-
-  color: #111111;
-
-  box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.14);
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-
-  font-size: 15px;
-  font-weight: 600;
-
-  transform: translateX(-50%);
-
-  cursor: pointer;
-}
-
-.mobile-stops-button span:first-child {
-  font-size: 18px;
-}
-
-
-/* =========================================================
-   PANEL DE PARADAS
-========================================================= */
+/* =====================================================
+   PANEL PARADAS
+===================================================== */
 
 .stops-panel {
-  position: fixed;
+  position: absolute;
 
-  top: 50%;
+  z-index: 10;
+
+  top: 120px;
   right: 24px;
+  bottom: 24px;
 
-  z-index: 40;
+  width: 300px;
 
-  width: 340px;
-  max-height: calc(100vh - 48px);
+  display: flex;
+
+  flex-direction: column;
 
   padding: 22px;
 
-  background:
-    rgba(255, 255, 255, 0.95);
-
   border:
-    1px solid rgba(0, 0, 0, 0.07);
+    1px solid
+    rgba(255, 255, 255, 0.9);
 
-  border-radius: var(--radius-large);
+  border-radius: 24px;
 
-  box-shadow: var(--shadow-card);
+  background: var(--panel);
 
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
 
-  transform:
-    translateY(-50%);
-
-  overflow: hidden;
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 }
 
-.stops-panel.open {
-  display: block;
-}
-
-.sheet-grabber {
-  display: none;
-}
 
 .panel-heading {
   display: flex;
 
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-
-  margin-bottom: 18px;
 }
+
 
 .panel-heading h2 {
   margin: 5px 0 0;
 
-  font-size: 30px;
-  line-height: 1;
+  font-size: 25px;
 
-  letter-spacing: -0.04em;
+  letter-spacing: -0.05em;
 }
 
+
 .icon-button {
-  display: flex;
+  display: grid;
 
-  align-items: center;
-  justify-content: center;
+  place-items: center;
 
-  width: 34px;
-  height: 34px;
-
-  padding: 0;
+  width: 36px;
+  height: 36px;
 
   border: 0;
 
   border-radius: 50%;
 
-  background: #f1f2f3;
+  background: #f0f2f5;
 
-  color: #111111;
+  color: #4d5866;
 
   font-size: 25px;
+
   line-height: 1;
-
-  cursor: pointer;
-
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease;
 }
+
 
 .icon-button:hover {
-  background: #e6e7e9;
-
-  transform: scale(1.04);
+  background: #e7e9ec;
 }
 
-.icon-button:active {
-  transform: scale(0.94);
-}
-
-
-/* =========================================================
-   LISTA DE PARADAS
-========================================================= */
 
 .stop-list {
   display: flex;
 
   flex-direction: column;
 
-  gap: 8px;
-
-  margin: 0;
-  padding: 0;
+  gap: 5px;
 
   list-style: none;
 
-  max-height: 45vh;
+  padding: 0;
 
-  overflow-y: auto;
+  margin: 22px 0 12px;
+
+  overflow: auto;
+
+  min-height: 0;
 }
+
 
 .stop-list li {
-  position: relative;
+  margin: 0;
+}
 
+
+.stop-button {
   display: flex;
 
   align-items: center;
 
-  min-height: 52px;
+  gap: 12px;
 
-  padding: 10px 13px;
+  width: 100%;
 
-  border-radius: 15px;
+  padding: 11px 10px;
 
-  background: #f5f6f7;
+  border: 0;
 
-  color: #222222;
+  border-radius: 13px;
 
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+  background: transparent;
+
+  text-align: left;
+
+  color: var(--ink);
 }
 
-.stop-list li.active {
-  background: #111111;
 
-  color: #ffffff;
-
-  transform: scale(1.01);
+.stop-button:hover {
+  background: #f2f4f7;
 }
 
-.stop-list li.done {
-  background: #e8e9eb;
+
+.stop-button.active {
+  background: #edf0f4;
 }
 
-.stop-list li .stop-number {
-  display: flex;
 
-  align-items: center;
-  justify-content: center;
+.stop-number {
+  display: grid;
 
-  flex: 0 0 auto;
+  flex: 0 0 28px;
 
-  width: 30px;
-  height: 30px;
+  place-items: center;
 
-  margin-right: 11px;
+  width: 28px;
+  height: 28px;
+
+  border:
+    1px solid
+    #dce1e7;
 
   border-radius: 50%;
 
-  background: #ffffff;
+  background: white;
 
-  color: #111111;
+  color: #788392;
 
-  font-size: 12px;
+  font-size: 11px;
+
   font-weight: 700;
 }
 
-.stop-list li.active .stop-number {
-  background: #ffffff;
+
+.stop-button.active .stop-number {
+  background: var(--accent);
+
+  color: white;
+
+  border-color: var(--accent);
 }
 
-.stop-list li .stop-name {
+
+.stop-name {
   font-size: 14px;
 
   font-weight: 600;
 }
 
+
 .travel-status {
-  margin: 16px 0 0;
+  flex: 0 0 auto;
+
+  margin: auto 0 0;
+
+  padding-top: 12px;
+
+  border-top:
+    1px solid
+    var(--line);
 
   color: var(--muted);
 
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 12px;
 }
 
 
-/* =========================================================
-   MEMORIA
-========================================================= */
+/* =====================================================
+   PARADAS EN MÓVIL
+===================================================== */
+
+.mobile-stops-button {
+  display: none;
+}
+
+
+/* =====================================================
+   PANEL RECUERDOS
+===================================================== */
 
 .memory-panel {
-  position: fixed;
+  position: absolute;
 
-  left: 50%;
+  z-index: 20;
+
+  right: 350px;
   bottom: 24px;
 
-  z-index: 60;
+  width:
+    min(
+      430px,
+      calc(100% - 390px)
+    );
 
-  width: min(
-    calc(100% - 48px),
-    680px
-  );
+  height:
+    min(
+      75%,
+      680px
+    );
 
-  max-height: 72vh;
+  display: flex;
 
-  padding: 22px 24px 24px;
+  flex-direction: column;
 
-  background:
-    rgba(255, 255, 255, 0.97);
+  overflow: hidden;
+
+  padding: 22px;
 
   border:
-    1px solid rgba(0, 0, 0, 0.07);
+    1px solid
+    rgba(255, 255, 255, 0.9);
 
-  border-radius: 28px;
+  border-radius: 24px;
 
-  box-shadow:
-    0 20px 70px rgba(0, 0, 0, 0.20);
+  background: var(--panel);
+
+  box-shadow: var(--shadow);
 
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
 
   transform:
-    translate(-50%, calc(100% + 40px));
+    translateY(
+      calc(100% + 40px)
+    );
+
+  visibility: hidden;
 
   transition:
-    transform 0.38s
-    cubic-bezier(.22, .8, .24, 1);
+    transform
+      0.42s
+      cubic-bezier(.22, 1, .36, 1),
 
-  overflow-y: auto;
+    visibility
+      0.42s;
 }
+
 
 .memory-panel.open {
   transform:
-    translate(-50%, 0);
+    translateY(0);
+
+  visibility: visible;
 }
+
 
 .memory-top {
+  flex: 0 0 auto;
+
   display: flex;
 
-  align-items: flex-start;
   justify-content: space-between;
 
-  margin-bottom: 12px;
+  align-items: center;
+
+  gap: 12px;
 }
+
+
+.memory-content {
+  flex: 1 1 auto;
+
+  min-height: 0;
+
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+  padding: 14px 0;
+}
+
 
 .memory-content h2 {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 
-  font-size: 30px;
-  line-height: 1;
+  font-size: 27px;
 
-  letter-spacing: -0.04em;
+  letter-spacing: -0.05em;
 }
+
 
 .memory-content p {
-  margin: 0;
+  color: #596371;
 
-  color: #555a60;
+  font-size: 14px;
 
-  font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.65;
+
+  white-space: pre-line;
 }
+
 
 .memory-photos {
   display: grid;
 
   grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
 
   gap: 8px;
 
-  margin-top: 18px;
+  margin-top: 16px;
 }
+
 
 .memory-photos img {
   display: block;
 
   width: 100%;
-  aspect-ratio: 1;
+
+  aspect-ratio: 4 / 5;
 
   object-fit: cover;
 
-  border-radius: 13px;
+  border-radius: 12px;
 }
+
 
 .memory-actions {
-  margin-top: 20px;
+  flex: 0 0 auto;
+
+  padding-top: 12px;
+
+  background: var(--panel);
 }
 
 
-/* =========================================================
-   BOTONES DE AVANZAR / RECUERDOS
-========================================================= */
+.primary-button {
+  display: flex;
 
-.trip-actions {
-  display: grid;
+  justify-content: space-between;
 
-  grid-template-columns:
-    1fr 1fr;
-
-  gap: 10px;
+  align-items: center;
 
   width: 100%;
-}
 
-.trip-actions button {
-  min-height: 50px;
+  padding: 14px 17px;
 
   border: 0;
 
   border-radius: 999px;
 
-  cursor: pointer;
+  background: var(--accent);
+
+  color: white;
+
+  font-weight: 650;
+}
+
+
+.primary-button span:last-child {
+  font-size: 20px;
+}
+
+
+/* =====================================================
+   GRABBER
+===================================================== */
+
+.sheet-grabber {
+  display: none;
+}
+
+
+/* =====================================================
+   ERROR MAPA
+===================================================== */
+
+.map-error {
+  margin: 24px;
+
+  padding: 16px;
+
+  border-radius: 14px;
+
+  background: white;
+
+  color: #202630;
 
   font-size: 14px;
-  font-weight: 650;
 
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease;
-}
-
-.trip-actions button:active {
-  transform: scale(0.98);
-}
-
-.trip-actions .advance-button {
-  background: #111111;
-
-  color: #ffffff;
-}
-
-.trip-actions .memory-button {
-  background: #eeeeef;
-
-  color: #111111;
+  line-height: 1.5;
 }
 
 
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
+/* =====================================================
+   MÓVIL
+===================================================== */
+
+@media (max-width: 760px) {
+
+  #app {
+    min-height: 0;
+  }
+
+
+  .header {
+    top:
+      max(
+        16px,
+        env(safe-area-inset-top)
+      );
+
+    left: 18px;
+  }
+
+
+  .header h1 {
+    font-size: 25px;
+  }
+
+
+  .mode-switch {
+    top: 84px;
+
+    left: 12px;
+    right: 12px;
+
+    transform: none;
+
+    justify-content: center;
+
+    gap: 2px;
+  }
+
+
+  .mode-button {
+    flex: 1;
+
+    padding: 11px 8px;
+
+    font-size: 11px;
+  }
+
+
+  /* PARADAS */
+
+  .stops-panel {
+    top: auto;
+
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+
+    max-height:
+      min(
+        72%,
+        560px
+      );
+
+    padding:
+      10px
+      18px
+      max(
+        20px,
+        env(safe-area-inset-bottom)
+      );
+
+    border-radius:
+      24px
+      24px
+      0
+      0;
+
+    border-bottom: 0;
+
+    transform:
+      translateY(
+        calc(100% + 20px)
+      );
+
+    visibility: hidden;
+
+    transition:
+      transform
+        0.38s
+        cubic-bezier(.22, 1, .36, 1),
+
+      visibility
+        0.38s;
+  }
+
+
+  .stops-panel.open {
+    transform:
+      translateY(0);
+
+    visibility: visible;
+  }
+
+
+  .sheet-grabber {
+    display: block;
+
+    flex: 0 0 auto;
+
+    width: 38px;
+    height: 4px;
+
+    margin:
+      0 auto 12px;
+
+    border-radius: 9px;
+
+    background: #d7dce3;
+  }
+
+
+  .panel-heading h2 {
+    font-size: 22px;
+  }
+
+
+  .stop-list {
+    margin: 12px 0;
+
+    gap: 2px;
+  }
+
+
+  .stop-button {
+    padding: 9px;
+  }
+
+
+  /* BOTÓN PARADAS */
+
+  .mobile-stops-button {
+    position: absolute;
+
+    z-index: 9;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    left: 16px;
+
+    bottom:
+      max(
+        18px,
+        env(safe-area-inset-bottom)
+      );
+
+    padding: 12px 17px;
+
+    border:
+      1px solid
+      rgba(30, 42, 60, 0.08);
+
+    border-radius: 999px;
+
+    background:
+      rgba(255, 255, 255, 0.94);
+
+    color: #394454;
+
+    font-size: 13px;
+
+    font-weight: 650;
+
+    box-shadow:
+      0 5px 20px
+      rgba(30, 42, 60, 0.12);
+  }
+
+
+  /* RECUERDOS */
+
+  .memory-panel {
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+
+    height:
+      min(
+        82%,
+        760px
+      );
+
+    max-height: 82%;
+
+    padding:
+      10px
+      18px
+      max(
+        18px,
+        env(safe-area-inset-bottom)
+      );
+
+    border-radius:
+      24px
+      24px
+      0
+      0;
+
+    border-bottom: 0;
+  }
+
+
+  .memory-content h2 {
+    font-size: 25px;
+  }
+
+
+  .memory-photos {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  #vehicle {
+    font-size: 25px;
+  }
+}
+
+
+/* =====================================================
+   REDUCIR ANIMACIONES SI EL SISTEMA LO PIDE
+===================================================== */
 
 @media (prefers-reduced-motion: reduce) {
 
   *,
   *::before,
   *::after {
-    scroll-behavior: auto !important;
+    transition-duration:
+      0.01ms !important;
   }
 
-  .travel-progress {
-    transition: none !important;
-    animation: none !important;
-  }
-
-  .memory-panel,
-  .stops-panel,
-  .trip-option,
-  .primary-button,
-  .icon-button {
+  .route-progress {
     transition: none !important;
   }
-}
-
-
-/* =========================================================
-   MÓVIL
-========================================================= */
-
-@media (max-width: 800px) {
-
-  html,
-  body {
-    width: 100%;
-    height: 100%;
-
-    overflow: hidden;
-  }
-
-  #app {
-    width: 100%;
-    height: 100dvh;
-
-    min-height: 100dvh;
-  }
-
-
-  /* -------------------------
-     HEADER
-  ------------------------- */
-
-  .header {
-    top: 0;
-    left: 0;
-
-    padding:
-      max(
-        18px,
-        env(safe-area-inset-top)
-      )
-      18px
-      8px;
-  }
-
-  .header h1 {
-    font-size: 34px;
-    line-height: 1.05;
-  }
-
-
-  /* -------------------------
-     MAPA
-  ------------------------- */
-
-  #map-container {
-    position: absolute;
-
-    inset: 0;
-
-    width: 100%;
-    height: 100dvh;
-
-    overflow: hidden;
-  }
-
-  #map {
-    width: 100%;
-    height: 100%;
-  }
-
-  #map svg {
-    display: block;
-
-    width: 100%;
-    height: 100%;
-  }
-
-  .vehicle-emoji {
-    font-size: 34px;
-  }
-
-  .stop-dot {
-    r: 7;
-  }
-
-
-  /* -------------------------
-     PARADAS
-  ------------------------- */
-
-  .mobile-stops-button {
-    display: flex;
-
-    bottom:
-      calc(
-        18px +
-        env(safe-area-inset-bottom)
-      );
-  }
-
-  .stops-panel {
-    position: fixed;
-
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: auto;
-
-    width: 100%;
-    max-width: none;
-
-    height: min(
-      72dvh,
-      620px
-    );
-
-    max-height: none;
-
-    padding:
-      10px
-      20px
-      calc(
-        22px +
-        env(safe-area-inset-bottom)
-      );
-
-    border-radius:
-      26px
-      26px
-      0
-      0;
-
-    transform:
-      translateY(105%);
-
-    transition:
-      transform 0.35s
-      cubic-bezier(.22, .8, .24, 1);
-
-    overflow-y: auto;
-
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .stops-panel.open {
-    transform:
-      translateY(0);
-  }
-
-  .sheet-grabber {
-    display: block;
-
-    width: 42px;
-    height: 5px;
-
-    margin:
-      2px auto
-      16px;
-
-    border-radius: 999px;
-
-    background: #d5d7da;
-  }
-
-  .panel-heading {
-    margin-bottom: 16px;
-  }
-
-  .panel-heading h2 {
-    font-size: 28px;
-  }
-
-  .stop-list {
-    max-height: none;
-
-    overflow: visible;
-  }
-
-
-  /* -------------------------
-     RECUERDOS
-  ------------------------- */
-
-  .memory-panel {
-    position: fixed;
-
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    width: 100%;
-    max-width: none;
-
-    max-height: 78dvh;
-
-    padding:
-      10px
-      20px
-      calc(
-        24px +
-        env(safe-area-inset-bottom)
-      );
-
-    border-radius:
-      26px
-      26px
-      0
-      0;
-
-    transform:
-      translateY(105%);
-
-    transition:
-      transform 0.35s
-      cubic-bezier(.22, .8, .24, 1);
-
-    overflow-y: auto;
-
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .memory-panel.open {
-    transform:
-      translateY(0);
-  }
-
-  .memory-content h2 {
-    font-size: 28px;
-  }
-
-  .memory-content p {
-    font-size: 14px;
-  }
-
-  .memory-photos {
-    grid-template-columns:
-      repeat(3, minmax(0, 1fr));
-
-    gap: 7px;
-  }
-
-
-  /* -------------------------
-     PANTALLA INICIAL
-  ------------------------- */
-
-  .start-screen {
-    padding: 18px;
-
-    align-items: flex-end;
-  }
-
-  .start-card {
-    width: 100%;
-    max-width: 520px;
-
-    max-height:
-      calc(
-        100dvh - 32px
-      );
-
-    padding:
-      22px
-      18px
-      calc(
-        18px +
-        env(safe-area-inset-bottom)
-      );
-
-    overflow-y: auto;
-
-    border-radius: 26px;
-  }
-
-  .start-card h2 {
-    font-size: 27px;
-
-    line-height: 1.08;
-  }
-
-  .trip-option {
-    min-height: 70px;
-
-    padding:
-      12px
-      14px;
-  }
-
-  .trip-option-text strong {
-    font-size: 15px;
-  }
-
-  .trip-option-text small {
-    font-size: 12px;
-  }
-
-  .primary-button {
-    min-height: 50px;
-  }
-
-
-  /* -------------------------
-     BOTONES INFERIORES
-  ------------------------- */
-
-  .trip-actions {
-    gap: 8px;
-  }
-
-  .trip-actions button {
-    min-height: 48px;
-
-    font-size: 13px;
-  }
-}
-
-
-/* =========================================================
-   MÓVILES PEQUEÑOS
-========================================================= */
-
-@media (max-width: 430px) {
-
-  .header {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-
-  .header h1 {
-    font-size: 30px;
-  }
-
-  .start-card {
-    padding:
-      18px
-      14px;
-  }
-
-  .start-card h2 {
-    font-size: 24px;
-  }
-
-  .trip-option {
-    min-height: 64px;
-  }
-
-  .trip-option-icon {
-    width: 38px;
-    height: 38px;
-
-    margin-right: 10px;
-
-    font-size: 22px;
-  }
-
-  .trip-option-text strong {
-    font-size: 14px;
-  }
-
-  .trip-option-text small {
-    font-size: 11px;
-  }
-
-  .mobile-stops-button {
-    bottom:
-      calc(
-        12px +
-        env(safe-area-inset-bottom)
-      );
-
-    min-height: 46px;
-
-    padding:
-      0
-      18px;
-  }
-
-  .memory-content h2 {
-    font-size: 25px;
-  }
-
-  .memory-photos {
-    gap: 6px;
-  }
-}
-
-
-/* =========================================================
-   PANTALLAS MUY ALTAS / ESCRITORIO
-========================================================= */
-
-@media (min-width: 801px) {
-
-  .stops-panel {
-    display: block;
-  }
-}
-
-
-/* =========================================================
-   EVITAR QUE LA LÍNEA SE ANIME POR CSS
-========================================================= */
-
-.travel-progress {
-  transition: none !important;
-  animation: none !important;
 }
