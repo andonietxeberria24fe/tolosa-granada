@@ -49,43 +49,57 @@
 
 
   const startScreen =
-    document.getElementById("start-screen");
+    document.getElementById(
+      "start-screen"
+    );
+
 
   const startButton =
-    document.getElementById("start-trip");
+    document.getElementById(
+      "start-trip"
+    );
+
 
   const continueButton =
-    document.getElementById("continue-trip");
-
-  const vehicle =
-    document.getElementById("vehicle");
+    document.getElementById(
+      "continue-trip"
+    );
 
 
   const stopList =
-    document.getElementById("stop-list");
+    document.getElementById(
+      "stop-list"
+    );
+
 
   const stopCount =
-    document.getElementById("stop-count");
+    document.getElementById(
+      "stop-count"
+    );
+
 
   const travelStatus =
-    document.getElementById("travel-status");
+    document.getElementById(
+      "travel-status"
+    );
 
 
   const stopsPanel =
-    document.getElementById("stops-panel");
+    document.getElementById(
+      "stops-panel"
+    );
+
 
   const openStopsButton =
-    document.getElementById("open-stops");
+    document.getElementById(
+      "open-stops"
+    );
+
 
   const closeStopsButton =
-    document.getElementById("close-stops");
-
-
-  const memoryPanel =
-    document.getElementById("memory-panel");
-
-  const closeMemoryButton =
-    document.getElementById("close-memory");
+    document.getElementById(
+      "close-stops"
+    );
 
 
   /*
@@ -94,14 +108,17 @@
 
   function getVisibleStops() {
 
-    if (currentMode === "direct") {
+    if (
+      currentMode === "direct"
+    ) {
 
       return [
         allStops[0],
-        allStops[allStops.length - 1]
+        allStops[5]
       ];
 
     }
+
 
     return allStops;
 
@@ -114,9 +131,14 @@
 
   function getFractions() {
 
-    if (currentMode === "direct") {
+    if (
+      currentMode === "direct"
+    ) {
 
-      return [0, 1];
+      return [
+        0,
+        1
+      ];
 
     }
 
@@ -124,14 +146,16 @@
     return allStops.map(
       stop =>
         window.TripMap
-          .getRoadStopFraction(stop.id)
+          .getRoadStopFraction(
+            stop.id
+          )
     );
 
   }
 
 
   /*
-   * DIBUJAR LISTA
+   * LISTA DE PARADAS
    */
 
   function renderStops() {
@@ -147,38 +171,60 @@
       (stop, index) => {
 
         const li =
-          document.createElement("li");
+          document.createElement(
+            "li"
+          );
 
-        li.className = "stop-list-item";
+
+        li.className =
+          "stop-list-item";
+
 
         li.dataset.stop =
           stop.id;
 
 
         const number =
-          document.createElement("span");
+          document.createElement(
+            "span"
+          );
+
 
         number.className =
           "stop-number";
+
 
         number.textContent =
           index + 1;
 
 
         const name =
-          document.createElement("span");
+          document.createElement(
+            "span"
+          );
+
 
         name.className =
           "stop-name";
+
 
         name.textContent =
           stop.name;
 
 
-        li.appendChild(number);
-        li.appendChild(name);
+        li.appendChild(
+          number
+        );
 
-        stopList.appendChild(li);
+
+        li.appendChild(
+          name
+        );
+
+
+        stopList.appendChild(
+          li
+        );
 
       }
     );
@@ -194,7 +240,7 @@
 
 
   /*
-   * MARCAR PARADA ACTUAL
+   * MARCAR PARADA
    */
 
   function markCurrentStop() {
@@ -204,40 +250,53 @@
 
 
     document
-      .querySelectorAll(".stop-list-item")
-      .forEach(item => {
+      .querySelectorAll(
+        ".stop-list-item"
+      )
+      .forEach(
+        item => {
 
-        const index =
-          visibleStops.findIndex(
-            stop =>
-              stop.id === item.dataset.stop
+          const index =
+            visibleStops.findIndex(
+              stop =>
+                stop.id ===
+                item.dataset.stop
+            );
+
+
+          item.classList.toggle(
+            "current",
+            index ===
+              currentStopIndex
           );
 
 
-        item.classList.toggle(
-          "current",
-          index === currentStopIndex
-        );
+          item.classList.toggle(
+            "completed",
+            index <
+              currentStopIndex
+          );
 
-        item.classList.toggle(
-          "completed",
-          index < currentStopIndex
-        );
-
-      });
+        }
+      );
 
   }
 
 
   /*
-   * ELEGIR MODO
+   * CAMBIAR MODO
    */
 
-  function chooseMode(mode) {
+  function chooseMode(
+    mode
+  ) {
 
-    if (!window.TripMap) {
+    if (
+      !window.TripMap
+    ) {
 
-      pendingMode = mode;
+      pendingMode =
+        mode;
 
       return;
 
@@ -250,7 +309,12 @@
         : "direct";
 
 
-    currentStopIndex = 0;
+    currentStopIndex =
+      0;
+
+
+    moving = false;
+
 
     window.TripMap.setMode(
       currentMode
@@ -260,49 +324,69 @@
     renderStops();
 
 
-    window.TripMap.setProgress(0);
-
-    window.TripMap.moveVehicle(0);
-
-
-    /*
-     * MOSTRAR MAPA
-     */
-
-    startScreen.classList.add("hidden");
-
-    continueButton.classList.add("visible");
+    window.TripMap.setProgress(
+      0
+    );
 
 
-    /*
-     * TEXTO
-     */
+    window.TripMap.moveVehicle(
+      0
+    );
+
 
     travelStatus.textContent =
       currentMode === "real"
         ? "Salimos de Tolosa"
-        : "Volamos de Tolosa a Granada";
+        : "Preparados para volar";
+
+
+    continueButton.disabled =
+      false;
+
+
+    continueButton.innerHTML =
+      "Avanzamos <span>→</span>";
 
 
     /*
-     * COCHE / AVIÓN
-     *
-     * El vehículo real está dentro del SVG,
-     * así que no hay problemas de escala.
+     * Cerramos recuerdos
+     * al cambiar de viaje.
      */
 
-    if (vehicle) {
+    if (
+      window.TripGallery
+    ) {
 
-      vehicle.style.display =
-        "block";
+      window.TripGallery.closeMemory();
 
     }
+
+
+    /*
+     * Actualizar selector superior
+     */
+
+    document
+      .querySelectorAll(
+        ".mode-button"
+      )
+      .forEach(
+        button => {
+
+          button.classList.toggle(
+            "selected",
+            button.dataset.mode ===
+              currentMode
+          );
+
+        }
+      );
 
   }
 
 
   /*
-   * ANIMAR VIAJE
+   * ANIMACIÓN
    */
 
   function travelToStop(
@@ -310,10 +394,13 @@
     toFraction
   ) {
 
-    if (moving) return;
+    if (moving) {
+      return;
+    }
 
 
     moving = true;
+
 
     continueButton.disabled =
       true;
@@ -322,7 +409,7 @@
     const duration =
       currentMode === "direct"
         ? 2200
-        : 1800;
+        : 1900;
 
 
     const start =
@@ -333,7 +420,9 @@
 
       return (
         t < 0.5
+
           ? 4 * t * t * t
+
           : 1 -
             Math.pow(
               -2 * t + 2,
@@ -350,9 +439,10 @@
         now - start;
 
 
-      let t =
+      const t =
         Math.min(
-          elapsed / duration,
+          elapsed /
+            duration,
           1
         );
 
@@ -369,19 +459,23 @@
         ) * eased;
 
 
-      window.TripMap.setProgress(
-        fraction
-      );
+      window.TripMap
+        .setProgress(
+          fraction
+        );
 
 
-      window.TripMap.moveVehicle(
-        fraction
-      );
+      window.TripMap
+        .moveVehicle(
+          fraction
+        );
 
 
       if (t < 1) {
 
-        requestAnimationFrame(frame);
+        requestAnimationFrame(
+          frame
+        );
 
         return;
 
@@ -389,7 +483,7 @@
 
 
       /*
-       * LLEGAMOS
+       * HEMOS LLEGADO
        */
 
       moving = false;
@@ -418,13 +512,13 @@
 
 
         if (
-          window.TripGallery &&
-          window.TripGallery.openMemory
+          window.TripGallery
         ) {
 
-          window.TripGallery.openMemory(
-            arrived.id
-          );
+          window.TripGallery
+            .openMemory(
+              arrived.id
+            );
 
         }
 
@@ -432,7 +526,7 @@
 
 
       /*
-       * ¿QUEDA OTRA PARADA?
+       * TODAVÍA QUEDAN PARADAS
        */
 
       if (
@@ -443,20 +537,20 @@
         continueButton.disabled =
           false;
 
-        continueButton.innerHTML =
-          `Avanzamos <span>→</span>`;
+      }
 
-      } else {
+      /*
+       * FIN
+       */
 
-        /*
-         * FINAL
-         */
+      else {
 
         continueButton.disabled =
           true;
 
+
         continueButton.innerHTML =
-          `Hemos llegado <span>✓</span>`;
+          "Hemos llegado <span>✓</span>";
 
         travelStatus.textContent =
           "Hemos llegado a Granada";
@@ -466,30 +560,29 @@
     }
 
 
-    requestAnimationFrame(frame);
+    requestAnimationFrame(
+      frame
+    );
 
   }
 
 
   /*
-   * BOTÓN AVANZAMOS
+   * AVANZAMOS
    */
 
   continueButton.addEventListener(
     "click",
     () => {
 
-      if (moving) return;
+      if (moving) {
+        return;
+      }
 
 
       const visibleStops =
         getVisibleStops();
 
-
-      /*
-       * Si estamos en la última,
-       * no hacemos nada.
-       */
 
       if (
         currentStopIndex >=
@@ -501,16 +594,12 @@
       }
 
 
-      /*
-       * Cerrar recuerdo anterior
-       */
-
       if (
-        window.TripGallery &&
-        window.TripGallery.closeMemory
+        window.TripGallery
       ) {
 
-        window.TripGallery.closeMemory();
+        window.TripGallery
+          .closeMemory();
 
       }
 
@@ -519,17 +608,16 @@
         getFractions();
 
 
-      const from =
-        fractions[currentStopIndex];
-
-
-      const to =
-        fractions[currentStopIndex + 1];
-
-
       travelToStop(
-        from,
-        to
+
+        fractions[
+          currentStopIndex
+        ],
+
+        fractions[
+          currentStopIndex + 1
+        ]
+
       );
 
     }
@@ -537,39 +625,72 @@
 
 
   /*
-   * OPCIONES INICIALES
+   * SELECTOR SUPERIOR
    */
 
   document
-    .querySelectorAll(".trip-option")
-    .forEach(button => {
+    .querySelectorAll(
+      ".mode-button"
+    )
+    .forEach(
+      button => {
 
-      button.addEventListener(
-        "click",
-        () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-          document
-            .querySelectorAll(".trip-option")
-            .forEach(
-              option =>
-                option.classList.remove(
-                  "selected"
-                )
+            chooseMode(
+              button.dataset.mode
             );
 
+          }
+        );
 
-          button.classList.add(
-            "selected"
-          );
-
-        }
-      );
-
-    });
+      }
+    );
 
 
   /*
-   * BOTÓN SEGUIMOS INICIAL
+   * OPCIONES DE LA PANTALLA INICIAL
+   */
+
+  document
+    .querySelectorAll(
+      ".trip-option"
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            document
+              .querySelectorAll(
+                ".trip-option"
+              )
+              .forEach(
+                option =>
+                  option.classList
+                    .remove(
+                      "selected"
+                    )
+              );
+
+
+            button.classList.add(
+              "selected"
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  /*
+   * BOTÓN INICIAL
    */
 
   startButton.addEventListener(
@@ -589,14 +710,22 @@
 
       if (!mapReady) {
 
-        pendingMode = mode;
+        pendingMode =
+          mode;
 
         return;
 
       }
 
 
-      chooseMode(mode);
+      chooseMode(
+        mode
+      );
+
+
+      startScreen.classList.add(
+        "hidden"
+      );
 
     }
   );
@@ -613,6 +742,7 @@
       stopsPanel.classList.add(
         "open"
       );
+
 
       openStopsButton.setAttribute(
         "aria-expanded",
@@ -631,31 +761,11 @@
         "open"
       );
 
+
       openStopsButton.setAttribute(
         "aria-expanded",
         "false"
       );
-
-    }
-  );
-
-
-  /*
-   * CERRAR RECUERDO
-   */
-
-  closeMemoryButton.addEventListener(
-    "click",
-    () => {
-
-      if (
-        window.TripGallery &&
-        window.TripGallery.closeMemory
-      ) {
-
-        window.TripGallery.closeMemory();
-
-      }
 
     }
   );
@@ -669,8 +779,13 @@
     "keydown",
     event => {
 
-      if (event.key !== "Escape") {
+      if (
+        event.key !==
+        "Escape"
+      ) {
+
         return;
+
       }
 
 
@@ -680,11 +795,11 @@
 
 
       if (
-        window.TripGallery &&
-        window.TripGallery.closeMemory
+        window.TripGallery
       ) {
 
-        window.TripGallery.closeMemory();
+        window.TripGallery
+          .closeMemory();
 
       }
 
@@ -703,18 +818,19 @@
       mapReady = true;
 
 
-      /*
-       * Al cargar, dejamos el mapa
-       * preparado en Tolosa.
-       */
-
       window.TripMap.setMode(
         "direct"
       );
 
-      window.TripMap.setProgress(0);
 
-      window.TripMap.moveVehicle(0);
+      window.TripMap.setProgress(
+        0
+      );
+
+
+      window.TripMap.moveVehicle(
+        0
+      );
 
 
       if (pendingMode) {
@@ -722,23 +838,27 @@
         const mode =
           pendingMode;
 
-        pendingMode = null;
 
-        chooseMode(mode);
+        pendingMode =
+          null;
+
+
+        chooseMode(
+          mode
+        );
+
+
+        startScreen.classList.add(
+          "hidden"
+        );
 
       }
 
     },
-    { once: true }
+    {
+      once: true
+    }
   );
 
-
-  /*
-   * ESTADO INICIAL
-   */
-
-  continueButton.classList.remove(
-    "visible"
-  );
 
 })();
