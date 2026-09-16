@@ -10,36 +10,45 @@
     { id: "granada", name: "Granada", lat: 37.177, lon: -3.598 }
   ];
 
+  // Puntos orientativos por tierra. No son coordenadas GPS de carretera.
   const roadRoute = [
-    [-2.078, 43.135],
-    [-2.16, 43.05],
-    [-2.33, 42.96],
-    [-2.15, 42.83],
-    [-1.785, 42.68],
-    [-1.20, 42.25],
-    [-0.55, 41.65],
-    [-0.10, 41.15],
-    [0.10, 40.75],
-    [0.13, 40.09],
-    [0.05, 39.75],
-    [-0.02, 39.45],
-    [-0.12, 38.95],
-    [-0.122, 38.541],
-    [-0.55, 38.25],
-    [-1.20, 37.75],
-    [-2.05, 37.35],
-    [-3.598, 37.177]
+    [-2.078,43.135],
+    [-2.16,43.05],
+    [-2.33,42.96],
+    [-2.15,42.83],
+    [-1.785,42.68],
+    [-1.45,42.45],
+    [-1.20,42.25],
+    [-0.85,41.95],
+    [-0.55,41.65],
+    [-0.25,41.35],
+    [-0.10,41.15],
+    [-0.05,40.95],
+    [0.02,40.75],
+    [0.10,40.55],
+    [0.13,40.30],
+    [0.13,40.09],
+    [0.08,39.90],
+    [0.02,39.70],
+    [-0.02,39.45],
+    [-0.08,39.15],
+    [-0.12,38.85],
+    [-0.122,38.541],
+    [-0.30,38.45],
+    [-0.55,38.25],
+    [-0.90,38.05],
+    [-1.20,37.75],
+    [-1.60,37.55],
+    [-2.05,37.35],
+    [-2.60,37.25],
+    [-3.10,37.20],
+    [-3.598,37.177]
   ];
 
+  // Vuelo directo visual: solo los extremos.
   const directRoute = [
-    [-2.078, 43.135],
-    [-1.7, 42.2],
-    [-1.2, 41.2],
-    [-0.7, 40.2],
-    [-0.3, 39.2],
-    [-0.8, 38.5],
-    [-1.8, 37.8],
-    [-3.598, 37.177]
+    [-2.078,43.135],
+    [-3.598,37.177]
   ];
 
   const mapElement = document.getElementById("map");
@@ -52,18 +61,14 @@
 
   function createSvgElement(name, attrs = {}) {
     const node = document.createElementNS("http://www.w3.org/2000/svg", name);
-
     Object.entries(attrs).forEach(([key, value]) => {
       node.setAttribute(key, String(value));
     });
-
     return node;
   }
 
   function project(lon, lat) {
-    return projection
-      ? projection(lon, lat)
-      : { x: 0, y: 0 };
+    return projection ? projection(lon, lat) : { x: 0, y: 0 };
   }
 
   function pathFromCoordinates(coords) {
@@ -80,31 +85,20 @@
 
     if (type === "Polygon") {
       coordinates.forEach(ring => {
-        const path = createSvgElement("path", {
+        group.appendChild(createSvgElement("path", {
           d: pathFromCoordinates(ring),
           class: "country",
           fill: "#e9edf2",
           stroke: "#cbd3dd",
           "stroke-width": "0.65",
-          "stroke-linejoin": "round",
-          "vector-effect": "non-scaling-stroke"
-        });
-
-        group.appendChild(path);
+          "stroke-linejoin": "round"
+        }));
       });
-
-      return;
-    }
-
-    if (type === "MultiPolygon") {
-      coordinates.forEach(polygon => {
-        renderGeometry({ type: "Polygon", coordinates: polygon }, group);
+    } else if (type === "MultiPolygon") {
+      coordinates.forEach(poly => {
+        renderGeometry({ type: "Polygon", coordinates: poly }, group);
       });
-
-      return;
-    }
-
-    if (type === "GeometryCollection") {
+    } else if (type === "GeometryCollection") {
       geometry.geometries.forEach(item => renderGeometry(item, group));
     }
   }
@@ -112,19 +106,13 @@
   function renderStops() {
     stops.forEach((stop, index) => {
       const p = project(stop.lon, stop.lat);
-
-      const circle = createSvgElement("circle", {
+      svg.appendChild(createSvgElement("circle", {
         cx: p.x,
         cy: p.y,
         r: 5.5,
-        fill: "#ffffff",
-        stroke: "#9ba8b8",
-        "stroke-width": "2.5",
-        "data-stop-index": index,
-        class: "stop-dot"
-      });
-
-      svg.appendChild(circle);
+        class: "stop-dot",
+        "data-stop-index": index
+      }));
     });
   }
 
@@ -156,7 +144,6 @@
     const scaled = Math.max(0, Math.min(1, fraction)) * (route.length - 1);
     const index = Math.min(route.length - 2, Math.floor(scaled));
     const t = scaled - index;
-
     const a = route[index];
     const b = route[index + 1];
 
@@ -166,10 +153,10 @@
     );
 
     const rect = svg.getBoundingClientRect();
-    const viewBox = svg.viewBox.baseVal;
-    const scale = Math.min(rect.width / viewBox.width, rect.height / viewBox.height);
-    const offsetX = (rect.width - viewBox.width * scale) / 2;
-    const offsetY = (rect.height - viewBox.height * scale) / 2;
+    const vb = svg.viewBox.baseVal;
+    const scale = Math.min(rect.width / vb.width, rect.height / vb.height);
+    const offsetX = (rect.width - vb.width * scale) / 2;
+    const offsetY = (rect.height - vb.height * scale) / 2;
 
     return {
       x: offsetX + p.x * scale,
@@ -180,10 +167,7 @@
   async function init() {
     try {
       const response = await fetch("/tolosa-granada/assets/map/europe.geojson");
-
-      if (!response.ok) {
-        throw new Error(`No se pudo cargar el GeoJSON: HTTP ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`GeoJSON: HTTP ${response.status}`);
 
       const geojson = await response.json();
 
@@ -191,9 +175,7 @@
         viewBox: "0 0 1000 700",
         preserveAspectRatio: "xMidYMid meet",
         role: "img",
-        "aria-label": "Mapa del recorrido por España",
-        width: "100%",
-        height: "100%"
+        "aria-label": "Mapa del recorrido por España"
       });
 
       mapElement.replaceChildren(svg);
@@ -204,7 +186,6 @@
       });
 
       const countries = createSvgElement("g");
-
       const features = geojson.type === "FeatureCollection"
         ? geojson.features
         : geojson.type === "Feature"
@@ -214,27 +195,10 @@
       features.forEach(feature => renderGeometry(feature.geometry, countries));
       svg.appendChild(countries);
 
-      routePath = createSvgElement("path", {
-        d: "",
-        fill: "none",
-        stroke: "#aab6c5",
-        "stroke-width": "3",
-        "stroke-linecap": "round",
-        "stroke-linejoin": "round",
-        class: "travel-route"
-      });
-
-      progressPath = createSvgElement("path", {
-        d: "",
-        fill: "none",
-        stroke: "#64748b",
-        "stroke-width": "3.5",
-        "stroke-linecap": "round",
-        "stroke-linejoin": "round",
-        class: "route-progress"
-      });
-
+      routePath = createSvgElement("path", { class: "travel-route" });
+      progressPath = createSvgElement("path", { class: "route-progress" });
       svg.append(routePath, progressPath);
+
       renderStops();
       drawRoute(roadRoute);
 
@@ -260,13 +224,8 @@
       };
     } catch (error) {
       console.error("Error al iniciar el mapa:", error);
-
-      mapElement.innerHTML = `
-        <p class="map-error">
-          No se ha podido cargar el mapa. Comprueba que existe
-          <code>assets/map/europe.geojson</code> y revisa la consola.
-        </p>
-      `;
+      mapElement.innerHTML =
+        '<p class="map-error">No se ha podido cargar el mapa. Comprueba el GeoJSON y revisa la consola.</p>';
     }
   }
 
