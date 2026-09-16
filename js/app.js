@@ -1,138 +1,243 @@
 (() => {
+
   "use strict";
 
+
+  /* =========================================
+     PARADAS
+  ========================================= */
+
   const allStops = [
+
     {
       id: "tolosa",
       name: "Tolosa",
       emoji: "📍"
     },
+
     {
       id: "aizkorri",
       name: "Aizkorri",
       emoji: "⛰️"
     },
+
     {
       id: "obanos",
       name: "Óbanos",
       emoji: "📍"
     },
+
     {
       id: "oropesa",
       name: "Oropesa",
       emoji: "🌊"
     },
+
     {
       id: "benidorm",
       name: "Benidorm",
       emoji: "🌴"
     },
+
     {
       id: "granada",
       name: "Granada",
       emoji: "🏁"
     }
+
   ];
 
+
+  /* =========================================
+     ESTADO
+  ========================================= */
+
   let currentMode = "direct";
+
   let currentStopIndex = -1;
+
   let moving = false;
 
-  const startScreen = document.getElementById("start-screen");
-  const startTrip = document.getElementById("start-trip");
+  let mapReady = false;
 
-  const vehicle = document.getElementById("vehicle");
+  let pendingMode = null;
 
-  const stopList = document.getElementById("stop-list");
-  const stopCount = document.getElementById("stop-count");
-  const travelStatus = document.getElementById("travel-status");
 
-  const openStopsButton = document.getElementById("open-stops");
-  const closeStopsButton = document.getElementById("close-stops");
-  const stopsPanel = document.getElementById("stops-panel");
+  /* =========================================
+     ELEMENTOS
+  ========================================= */
+
+  const startScreen =
+    document.getElementById("start-screen");
+
+  const startTrip =
+    document.getElementById("start-trip");
+
+  const vehicle =
+    document.getElementById("vehicle");
+
+  const stopList =
+    document.getElementById("stop-list");
+
+  const stopCount =
+    document.getElementById("stop-count");
+
+  const travelStatus =
+    document.getElementById("travel-status");
+
+  const openStopsButton =
+    document.getElementById("open-stops");
+
+  const closeStopsButton =
+    document.getElementById("close-stops");
+
+  const stopsPanel =
+    document.getElementById("stops-panel");
 
   const continueButton =
     document.getElementById("continue-trip");
 
-  const closeMemory =
+  const closeMemoryButton =
     document.getElementById("close-memory");
 
-  const memoryPanel =
-    document.getElementById("memory-panel");
 
-
-  /* -----------------------------------------
+  /* =========================================
      SELECCIÓN DEL VIAJE
-  ----------------------------------------- */
+  ========================================= */
 
-  document.querySelectorAll(".trip-option").forEach(button => {
+  document
+    .querySelectorAll(".trip-option")
+    .forEach(button => {
 
-    button.addEventListener("click", () => {
+      button.addEventListener("click", () => {
 
-      document
-        .querySelectorAll(".trip-option")
-        .forEach(item => {
-          item.classList.remove("selected");
-        });
+        document
+          .querySelectorAll(".trip-option")
+          .forEach(item => {
 
-      button.classList.add("selected");
+            item.classList.remove(
+              "selected"
+            );
 
-      currentMode = button.dataset.mode;
+          });
+
+
+        button.classList.add(
+          "selected"
+        );
+
+
+        currentMode =
+          button.dataset.mode;
+
+      });
 
     });
 
-  });
+
+  /* =========================================
+     PARADAS VISIBLES
+  ========================================= */
+
+  function getVisibleStops() {
+
+    if (currentMode === "direct") {
+
+      return [
+
+        allStops[0],
+
+        allStops[5]
+
+      ];
+
+    }
 
 
-  /* -----------------------------------------
-     INICIO DEL VIAJE
-  ----------------------------------------- */
+    return allStops;
 
-  startTrip.addEventListener("click", () => {
-
-    startScreen.classList.add("hidden");
-
-    chooseMode(currentMode);
-
-  });
+  }
 
 
-  /* -----------------------------------------
-     FRACCIONES DE LAS PARADAS
-  ----------------------------------------- */
+  /* =========================================
+     FRACCIONES DEL RECORRIDO
+  ========================================= */
 
   function getFractions() {
 
-    if (currentMode === "direct") {
+    if (!window.TripMap) {
+
       return [0, 1];
+
     }
 
+
+    /*
+      MODO DIRECTO
+      Solo Tolosa → Granada.
+    */
+
+    if (currentMode === "direct") {
+
+      return [0, 1];
+
+    }
+
+
+    /*
+      MODO REAL
+      Usamos las posiciones exactas
+      de las paradas dentro de roadRoute.
+    */
+
     return allStops.map(stop =>
-      window.TripMap.getRoadStopFraction(stop.id)
+
+      window.TripMap.getRoadStopFraction(
+        stop.id
+      )
+
     );
 
   }
 
 
-  /* -----------------------------------------
+  /* =========================================
      POSICIÓN DEL COCHE
-  ----------------------------------------- */
+  ========================================= */
 
   function positionVehicle(fraction) {
+
+    if (!window.TripMap) {
+      return;
+    }
+
 
     const position =
       window.TripMap.positionAtRouteFraction(
         fraction
       );
 
-    if (!position) return;
 
-    vehicle.style.left = `${position.x}px`;
-    vehicle.style.top = `${position.y}px`;
+    if (!position) {
+      return;
+    }
+
+
+    vehicle.style.left =
+      `${position.x}px`;
+
+    vehicle.style.top =
+      `${position.y}px`;
+
 
     /*
-      El emoji original queda invertido.
-      Lo corregimos únicamente con X 180°.
+      El emoji del coche aparece invertido
+      originalmente.
+
+      Lo corregimos girándolo 180º
+      en el eje X.
+
+      NO rotamos según el tramo.
     */
 
     vehicle.style.transform =
@@ -141,42 +246,69 @@
   }
 
 
-  /* -----------------------------------------
+  /* =========================================
      ACTUALIZAR PROGRESO
-  ----------------------------------------- */
+  ========================================= */
 
   function updateProgress(fraction) {
 
-    window.TripMap.setProgress(fraction);
+    if (!window.TripMap) {
+      return;
+    }
 
-    positionVehicle(fraction);
+
+    window.TripMap.setProgress(
+      fraction
+    );
+
+
+    positionVehicle(
+      fraction
+    );
 
   }
 
 
-  /* -----------------------------------------
-     VIAJAR HASTA UNA PARADA
-  ----------------------------------------- */
+  /* =========================================
+     VIAJAR ENTRE PARADAS
+  ========================================= */
 
-  function travelToStop(start, end) {
+  function travelToStop(
+    start,
+    end
+  ) {
 
-    if (moving) return;
+    if (moving) {
+      return;
+    }
+
 
     moving = true;
 
-    const startTime = performance.now();
+    continueButton.disabled = true;
+
+
+    const startTime =
+      performance.now();
+
 
     const distance =
-      Math.abs(end - start);
+      Math.abs(
+        end - start
+      );
+
 
     const duration =
       currentMode === "direct"
+
         ? 1800
+
         : Math.max(
             2600,
             Math.min(
               6000,
-              2600 + distance * 5000
+              2600 +
+              distance * 5000
             )
           );
 
@@ -184,33 +316,53 @@
     function easeInOut(t) {
 
       return t < 0.5
+
         ? 2 * t * t
-        : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+        : 1 -
+          Math.pow(
+            -2 * t + 2,
+            2
+          ) / 2;
 
     }
 
 
     function animate(now) {
 
-      const elapsed = now - startTime;
+      const elapsed =
+        now - startTime;
 
-      let t = elapsed / duration;
+
+      let t =
+        elapsed / duration;
+
 
       if (t > 1) {
         t = 1;
       }
 
-      const eased = easeInOut(t);
+
+      const eased =
+        easeInOut(t);
+
 
       const fraction =
-        start + (end - start) * eased;
+        start +
+        (end - start) *
+        eased;
 
-      updateProgress(fraction);
+
+      updateProgress(
+        fraction
+      );
 
 
       if (t < 1) {
 
-        requestAnimationFrame(animate);
+        requestAnimationFrame(
+          animate
+        );
 
         return;
 
@@ -219,103 +371,152 @@
 
       /*
         MUY IMPORTANTE:
-        al terminar colocamos el coche
-        exactamente en la parada.
+
+        Colocamos el coche EXACTAMENTE
+        en la fracción final.
+
+        De esta manera se queda junto
+        al círculo de la parada.
       */
 
       updateProgress(end);
 
+
       moving = false;
+
 
       currentStopIndex++;
 
+
+      const visible =
+        getVisibleStops();
+
+
       const stop =
-        getVisibleStops()[currentStopIndex];
+        visible[
+          currentStopIndex
+        ];
+
 
       if (stop) {
 
-        markCurrentStop(stop.id);
+        markCurrentStop(
+          stop.id
+        );
+
 
         travelStatus.textContent =
           `Hemos llegado a ${stop.name}`;
 
-        if (window.TripGallery) {
-          window.TripGallery.openMemory(stop.id);
+
+        if (
+          window.TripGallery
+        ) {
+
+          window.TripGallery.openMemory(
+            stop.id
+          );
+
         }
+
+      }
+
+
+      /*
+        Si todavía quedan paradas,
+        mostramos Seguimos.
+      */
+
+      if (
+        currentStopIndex <
+        visible.length - 1
+      ) {
+
+        continueButton.disabled =
+          false;
+
+      }
+
+      else {
+
+        continueButton.disabled =
+          true;
+
+        travelStatus.textContent =
+          "Hemos llegado al final del viaje.";
 
       }
 
     }
 
-    requestAnimationFrame(animate);
+
+    requestAnimationFrame(
+      animate
+    );
 
   }
 
 
-  /* -----------------------------------------
-     PARADAS VISIBLES
-  ----------------------------------------- */
-
-  function getVisibleStops() {
-
-    if (currentMode === "direct") {
-
-      return [
-        allStops[0],
-        allStops[5]
-      ];
-
-    }
-
-    return allStops;
-
-  }
-
-
-  /* -----------------------------------------
+  /* =========================================
      LISTA DE PARADAS
-  ----------------------------------------- */
+  ========================================= */
 
   function renderStops() {
 
     const visible =
       getVisibleStops();
 
+
     stopList.replaceChildren();
+
 
     stopCount.textContent =
       visible.length;
 
 
-    visible.forEach((stop, index) => {
+    visible.forEach(
+      (stop, index) => {
 
-      const li =
-        document.createElement("li");
+        const li =
+          document.createElement(
+            "li"
+          );
 
-      li.className = "stop-item";
 
-      li.dataset.stopId = stop.id;
+        li.className =
+          "stop-item";
 
-      li.innerHTML = `
-        <span class="stop-number">
-          ${index + 1}
-        </span>
 
-        <span class="stop-name">
-          ${stop.name}
-        </span>
-      `;
+        li.dataset.stopId =
+          stop.id;
 
-      stopList.appendChild(li);
 
-    });
+        li.innerHTML = `
+
+          <span class="stop-number">
+            ${index + 1}
+          </span>
+
+          <span class="stop-name">
+            ${stop.name}
+          </span>
+
+        `;
+
+
+        stopList.appendChild(
+          li
+        );
+
+      }
+    );
 
   }
 
 
-  /* -----------------------------------------
-     MARCAR PARADA ACTUAL
-  ----------------------------------------- */
+  /* =========================================
+     MARCAR PARADA
+  ========================================= */
 
   function markCurrentStop(id) {
 
@@ -324,8 +525,11 @@
       .forEach(item => {
 
         item.classList.toggle(
+
           "current",
+
           item.dataset.stopId === id
+
         );
 
       });
@@ -333,35 +537,73 @@
   }
 
 
-  /* -----------------------------------------
+  /* =========================================
      CAMBIAR DE MODO
-  ----------------------------------------- */
+  ========================================= */
 
   function chooseMode(mode) {
 
-    currentMode = mode;
+    /*
+      Protección contra el error
+      de TripMap undefined.
+    */
 
-    currentStopIndex = -1;
+    if (
+      !window.TripMap
+    ) {
 
-    moving = false;
+      pendingMode = mode;
+
+      return;
+
+    }
+
+
+    currentMode =
+      mode;
+
+
+    currentStopIndex =
+      -1;
+
+
+    moving =
+      false;
+
+
+    continueButton.disabled =
+      false;
+
 
     const visible =
       getVisibleStops();
 
+
     renderStops();
 
 
-    window.TripMap.setMode(mode);
+    /*
+      Ahora TripMap sí existe.
+    */
+
+    window.TripMap.setMode(
+      currentMode
+    );
+
 
     const fractions =
       getFractions();
 
 
     /*
-      Comenzamos exactamente en Tolosa.
+      Comenzamos exactamente
+      en Tolosa.
     */
 
-    updateProgress(fractions[0]);
+    updateProgress(
+      fractions[0]
+    );
+
 
     markCurrentStop(
       visible[0].id
@@ -371,32 +613,25 @@
     travelStatus.textContent =
       `Salimos de ${visible[0].name}`;
 
-
-    /*
-      Después de seleccionar el viaje,
-      aparece el mapa.
-
-      El primer "Seguimos" se usa
-      para comenzar desde Tolosa.
-    */
-
-    continueButton.disabled = false;
-
   }
 
 
-  /* -----------------------------------------
-     BOTÓN SEGUIMOS
-  ----------------------------------------- */
+  /* =========================================
+     BOTÓN SEGUIMOS DEL VIAJE
+  ========================================= */
 
   continueButton.addEventListener(
     "click",
     () => {
 
-      if (moving) return;
+      if (moving) {
+        return;
+      }
+
 
       const visible =
         getVisibleStops();
+
 
       const fractions =
         getFractions();
@@ -407,14 +642,28 @@
         Tolosa → siguiente parada.
       */
 
-      if (currentStopIndex < 0) {
+      if (
+        currentStopIndex < 0
+      ) {
 
-        currentStopIndex = 0;
+        currentStopIndex =
+          0;
 
-        travelToStop(
-          fractions[0],
-          fractions[1]
-        );
+
+        if (
+          visible.length > 1
+        ) {
+
+          travelToStop(
+
+            fractions[0],
+
+            fractions[1]
+
+          );
+
+        }
+
 
         return;
 
@@ -425,12 +674,13 @@
         currentStopIndex + 1;
 
 
-      if (nextIndex >= visible.length) {
+      if (
+        nextIndex >=
+        visible.length
+      ) {
 
-        travelStatus.textContent =
-          "Hemos llegado al final del viaje.";
-
-        continueButton.disabled = true;
+        continueButton.disabled =
+          true;
 
         return;
 
@@ -438,23 +688,33 @@
 
 
       travelToStop(
-        fractions[currentStopIndex],
-        fractions[nextIndex]
+
+        fractions[
+          currentStopIndex
+        ],
+
+        fractions[
+          nextIndex
+        ]
+
       );
 
     }
   );
 
 
-  /* -----------------------------------------
-     PARADAS
-  ----------------------------------------- */
+  /* =========================================
+     PANEL DE PARADAS
+  ========================================= */
 
   openStopsButton.addEventListener(
     "click",
     () => {
 
-      stopsPanel.classList.add("open");
+      stopsPanel.classList.add(
+        "open"
+      );
+
 
       openStopsButton.setAttribute(
         "aria-expanded",
@@ -469,7 +729,10 @@
     "click",
     () => {
 
-      stopsPanel.classList.remove("open");
+      stopsPanel.classList.remove(
+        "open"
+      );
+
 
       openStopsButton.setAttribute(
         "aria-expanded",
@@ -480,17 +743,26 @@
   );
 
 
-  /* -----------------------------------------
+  /* =========================================
      CERRAR RECUERDO
-  ----------------------------------------- */
+  ========================================= */
 
-  closeMemory.addEventListener(
+  closeMemoryButton.addEventListener(
     "click",
     () => {
 
-      memoryPanel.classList.remove("open");
+      const panel =
+        document.getElementById(
+          "memory-panel"
+        );
 
-      memoryPanel.setAttribute(
+
+      panel.classList.remove(
+        "open"
+      );
+
+
+      panel.setAttribute(
         "aria-hidden",
         "true"
       );
@@ -499,33 +771,123 @@
   );
 
 
-  /* -----------------------------------------
-     ESPERAR AL MAPA
-  ----------------------------------------- */
+  /* =========================================
+     MAPA LISTO
+  ========================================= */
 
-  if (window.TripMap?.ready) {
+  window.addEventListener(
+    "trip-map-ready",
+    () => {
 
-    chooseMode("direct");
+      mapReady =
+        true;
 
-  } else {
 
-    window.addEventListener(
-      "trip-map-ready",
-      () => {
+      /*
+        Preparamos el mapa,
+        pero NO empezamos el viaje.
+      */
 
-        /*
-          La pantalla inicial permanece
-          visible hasta pulsar Seguimos.
-        */
+      if (
+        window.TripMap
+      ) {
 
-        window.TripMap.setMode("direct");
+        window.TripMap.setMode(
+          "direct"
+        );
 
-        updateProgress(0);
 
-      },
-      { once: true }
-    );
+        updateProgress(
+          0
+        );
 
-  }
+      }
+
+
+      /*
+        Si el usuario había pulsado
+        Seguimos antes de que cargase
+        el mapa, arrancamos ahora.
+      */
+
+      if (
+        pendingMode
+      ) {
+
+        const mode =
+          pendingMode;
+
+
+        pendingMode =
+          null;
+
+
+        startScreen.classList.add(
+          "hidden"
+        );
+
+
+        chooseMode(
+          mode
+        );
+
+      }
+
+    },
+    {
+      once: true
+    }
+  );
+
+
+  /* =========================================
+     BOTÓN SEGUIMOS INICIAL
+  ========================================= */
+
+  startTrip.addEventListener(
+    "click",
+    () => {
+
+      const selected =
+        document.querySelector(
+          ".trip-option.selected"
+        );
+
+
+      const mode =
+        selected?.dataset.mode ||
+        "direct";
+
+
+      /*
+        Si el mapa aún no ha terminado
+        de cargar, esperamos.
+      */
+
+      if (
+        !mapReady ||
+        !window.TripMap
+      ) {
+
+        pendingMode =
+          mode;
+
+        return;
+
+      }
+
+
+      startScreen.classList.add(
+        "hidden"
+      );
+
+
+      chooseMode(
+        mode
+      );
+
+    }
+  );
+
 
 })();
