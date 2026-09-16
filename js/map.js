@@ -216,10 +216,19 @@
   }
 
   function setDirectMode(enabled) {
-    if (routePath) {
-      routePath.classList.toggle("direct", enabled);
-    }
+  if (!routePath) return;
+
+  routePath.classList.toggle("direct", enabled);
+
+  if (enabled) {
+    routePath.setAttribute(
+      "d",
+      makeRoutePath([stops[0], stops[stops.length - 1]])
+    );
+  } else {
+    routePath.setAttribute("d", makeRoutePath(stops));
   }
+}
 
   window.TripMap = {
     stops,
