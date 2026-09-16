@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="es">
+
 <head>
+
   <meta charset="utf-8">
 
   <meta
@@ -8,23 +10,33 @@
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   >
 
-  <meta name="theme-color" content="#f7f8fa">
+  <meta
+    name="theme-color"
+    content="#f7f8fa"
+  >
 
   <title>El viaje</title>
 
-  <link rel="icon" href="data:,">
+  <link
+    rel="icon"
+    href="data:,"
+  >
 
   <link
     rel="stylesheet"
     href="/tolosa-granada/css/style.css"
   >
+
 </head>
+
 
 <body>
 
 <main id="app">
 
+
   <!-- CABECERA -->
+
   <header class="header">
 
     <div class="eyebrow">
@@ -38,7 +50,8 @@
   </header>
 
 
-  <!-- SELECTOR SUPERIOR DE VIAJE -->
+  <!-- CAMBIO DE VIAJE -->
+
   <div
     id="mode-switch"
     class="mode-switch"
@@ -53,6 +66,7 @@
       <span>Tolosa → Granada</span>
     </button>
 
+
     <button
       class="mode-button"
       data-mode="real"
@@ -66,6 +80,7 @@
 
 
   <!-- PANTALLA INICIAL -->
+
   <section
     id="start-screen"
     class="start-screen"
@@ -83,6 +98,7 @@
 
 
       <div class="trip-options">
+
 
         <button
           class="trip-option selected"
@@ -141,6 +157,7 @@
 
         </button>
 
+
       </div>
 
 
@@ -149,7 +166,8 @@
         class="primary-button"
         type="button"
       >
-        Seguimos <span>→</span>
+        Seguimos
+        <span>→</span>
       </button>
 
     </div>
@@ -158,6 +176,7 @@
 
 
   <!-- MAPA -->
+
   <div id="map-container">
 
     <div
@@ -168,28 +187,25 @@
   </div>
 
 
-  <!-- BOTÓN AVANZAMOS -->
-  <button
-    id="continue-trip"
-    class="floating-continue"
-    type="button"
-  >
-    Avanzamos <span>→</span>
-  </button>
+  <!-- BOTÓN PARADAS EN MÓVIL -->
 
-
-  <!-- PARADAS -->
   <button
     id="open-stops"
     class="mobile-stops-button"
     aria-expanded="false"
     type="button"
   >
+
     <span>☷</span>
+
     Paradas
+
     <span id="stop-count"></span>
+
   </button>
 
+
+  <!-- PANEL PARADAS -->
 
   <aside
     id="stops-panel"
@@ -198,6 +214,7 @@
   >
 
     <div class="sheet-grabber"></div>
+
 
     <div class="panel-heading">
 
@@ -242,7 +259,43 @@
   </aside>
 
 
-  <!-- CAJÓN DE RECUERDOS -->
+  <!-- BOTONES DE ACCIÓN -->
+
+  <div
+    id="trip-actions"
+    class="trip-actions hidden"
+  >
+
+    <button
+      id="continue-trip"
+      class="action-button action-continue"
+      type="button"
+    >
+
+      <span>←</span>
+
+      Avanzamos
+
+    </button>
+
+
+    <button
+      id="open-memories"
+      class="action-button action-memory"
+      type="button"
+    >
+
+      <span>✦</span>
+
+      Recuerdos
+
+    </button>
+
+  </div>
+
+
+  <!-- VENTANA / CAJÓN DE RECUERDOS -->
+
   <section
     id="memory-panel"
     class="memory-panel"
@@ -257,9 +310,18 @@
 
     <div class="memory-top">
 
-      <span class="eyebrow">
-        UN RECUERDO DEL VIAJE
-      </span>
+      <div>
+
+        <span class="eyebrow">
+          UN RECUERDO DEL VIAJE
+        </span>
+
+        <div
+          id="memory-location"
+          class="memory-location"
+        ></div>
+
+      </div>
 
 
       <div class="memory-top-actions">
@@ -268,7 +330,7 @@
           id="expand-memory"
           class="memory-expand"
           type="button"
-          aria-label="Subir recuerdos"
+          aria-label="Ampliar recuerdos"
         >
           ⌃
         </button>
@@ -277,7 +339,7 @@
         <button
           id="close-memory"
           class="icon-button"
-          aria-label="Cerrar recuerdo"
+          aria-label="Cerrar recuerdos"
           type="button"
         >
           ×
