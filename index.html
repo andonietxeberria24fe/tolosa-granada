@@ -1,46 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tolosa — Granada</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8fa">
+  <title>El viaje</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div id="app">
-    <header class="main-header">
-      <span class="header-kicker">UN VIAJE, MUCHOS RECUERDOS</span>
-      <h1>Tolosa <span>→</span> Granada</h1>
+  <main id="app">
+    <header class="header">
+      <div class="eyebrow">UN VIAJE PARA RECORDAR</div>
+      <h1>El viaje <span>✦</span></h1>
     </header>
 
-    <nav class="modes" aria-label="Modo de recorrido">
-      <button class="mode-button active" id="road-mode">El viaje de verdad</button>
-      <button class="mode-button" id="direct-mode">Tolosa → Granada</button>
+    <nav class="mode-switch" aria-label="Modo de viaje">
+      <button class="mode-button active" data-mode="real">El viaje de verdad</button>
+      <button class="mode-button" data-mode="direct">Tolosa → Granada</button>
     </nav>
 
-    <main>
-      <section id="map-container" aria-label="Mapa del viaje">
-        <div id="map"></div>
-        <div id="car" aria-label="Coche del viaje">🚙</div>
-      </section>
+    <div id="map-container">
+      <div id="map" aria-label="Mapa del recorrido"></div>
+      <div id="vehicle" aria-hidden="true">🚙</div>
+    </div>
 
-      <aside class="stops-panel" aria-label="Paradas del viaje">
-        <p class="panel-kicker">NUESTRO RECORRIDO</p>
-        <h2>Las paradas</h2>
-        <ol id="stop-list"></ol>
-        <button id="next-stop" class="next-button">Seguimos <span>→</span></button>
-        <p id="status" aria-live="polite">Preparando el recorrido…</p>
-      </aside>
+    <button id="open-stops" class="mobile-stops-button" aria-expanded="false">
+      <span>☷</span> Paradas <span id="stop-count"></span>
+    </button>
 
-      <section id="memory-panel" class="memory-panel" hidden>
-        <button id="close-memory" class="close-button" aria-label="Cerrar recuerdo">×</button>
-        <span class="panel-kicker">UN RECUERDO DE ESTE VIAJE</span>
-        <h2 id="memory-title"></h2>
-        <div id="memory-content"></div>
-        <button id="memory-continue" class="next-button">Seguimos <span>→</span></button>
-      </section>
-    </main>
-  </div>
+    <aside id="stops-panel" class="stops-panel" aria-label="Paradas del viaje">
+      <div class="sheet-grabber"></div>
+      <div class="panel-heading">
+        <div>
+          <div class="eyebrow">EL RECORRIDO</div>
+          <h2>Paradas</h2>
+        </div>
+        <button id="close-stops" class="icon-button" aria-label="Cerrar paradas">×</button>
+      </div>
+      <ol id="stop-list" class="stop-list"></ol>
+      <p id="travel-status" class="travel-status">Preparados para salir</p>
+    </aside>
+
+    <section id="memory-panel" class="memory-panel" aria-hidden="true">
+      <div class="sheet-grabber"></div>
+      <div class="memory-top">
+        <span class="eyebrow">UN RECUERDO DEL VIAJE</span>
+        <button id="close-memory" class="icon-button" aria-label="Cerrar recuerdo">×</button>
+      </div>
+      <div id="memory-content" class="memory-content"></div>
+      <div class="memory-actions">
+        <button id="continue-trip" class="primary-button">Seguimos <span>→</span></button>
+      </div>
+    </section>
+  </main>
 
   <script src="js/map.js"></script>
   <script src="js/gallery.js"></script>
