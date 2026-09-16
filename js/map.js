@@ -10,45 +10,48 @@
     { id: "granada", name: "Granada", lat: 37.177, lon: -3.598 }
   ];
 
-  // Puntos orientativos por tierra. No son coordenadas GPS de carretera.
+  /*
+   * Trazado orientativo por tierra.
+   * No es una ruta GPS ni una geometría exacta de carreteras.
+   * Valencia no se muestra como parada ni como recuerdo.
+   */
   const roadRoute = [
-    [-2.078,43.135],
-    [-2.16,43.05],
-    [-2.33,42.96],
-    [-2.15,42.83],
-    [-1.785,42.68],
-    [-1.45,42.45],
-    [-1.20,42.25],
-    [-0.85,41.95],
-    [-0.55,41.65],
-    [-0.25,41.35],
-    [-0.10,41.15],
-    [-0.05,40.95],
-    [0.02,40.75],
-    [0.10,40.55],
-    [0.13,40.30],
-    [0.13,40.09],
-    [0.08,39.90],
-    [0.02,39.70],
-    [-0.02,39.45],
-    [-0.08,39.15],
-    [-0.12,38.85],
-    [-0.122,38.541],
-    [-0.30,38.45],
-    [-0.55,38.25],
-    [-0.90,38.05],
-    [-1.20,37.75],
-    [-1.60,37.55],
-    [-2.05,37.35],
-    [-2.60,37.25],
-    [-3.10,37.20],
-    [-3.598,37.177]
+    [-2.078, 43.135],
+    [-2.16, 43.05],
+    [-2.33, 42.96],
+    [-2.15, 42.83],
+    [-1.785, 42.68],
+    [-1.45, 42.45],
+    [-1.20, 42.25],
+    [-0.85, 41.95],
+    [-0.55, 41.65],
+    [-0.25, 41.35],
+    [-0.10, 41.15],
+    [-0.05, 40.95],
+    [0.02, 40.75],
+    [0.10, 40.55],
+    [0.13, 40.30],
+    [0.135, 40.092],
+    [0.08, 39.90],
+    [0.02, 39.70],
+    [-0.02, 39.45],
+    [-0.08, 39.15],
+    [-0.12, 38.85],
+    [-0.122, 38.541],
+    [-0.30, 38.45],
+    [-0.55, 38.25],
+    [-0.90, 38.05],
+    [-1.20, 37.75],
+    [-1.60, 37.55],
+    [-2.05, 37.35],
+    [-2.60, 37.25],
+    [-3.10, 37.20],
+    [-3.598, 37.177]
   ];
 
-  // Vuelo directo visual: solo los extremos.
   const directRoute = [
-    [-2.078,43.135],
-    [-3.598,37.177]
+    [-2.078, 43.135],
+    [-3.598, 37.177]
   ];
 
   const mapElement = document.getElementById("map");
@@ -59,16 +62,16 @@
   let projection;
   let activeRoute = roadRoute;
 
-  function createSvgElement(name, attrs = {}) {
-    const node = document.createElementNS("http://www.w3.org/2000/svg", name);
-    Object.entries(attrs).forEach(([key, value]) => {
-      node.setAttribute(key, String(value));
+  function svgElement(name, attributes = {}) {
+    const element = document.createElementNS("http://www.w3.org/2000/svg", name);
+    Object.entries(attributes).forEach(([key, value]) => {
+      element.setAttribute(key, String(value));
     });
-    return node;
+    return element;
   }
 
   function project(lon, lat) {
-    return projection ? projection(lon, lat) : { x: 0, y: 0 };
+    return projection(lon, lat);
   }
 
   function pathFromCoordinates(coords) {
@@ -81,38 +84,42 @@
   function renderGeometry(geometry, group) {
     if (!geometry) return;
 
-    const { type, coordinates } = geometry;
-
-    if (type === "Polygon") {
-      coordinates.forEach(ring => {
-        group.appendChild(createSvgElement("path", {
+    if (geometry.type === "Polygon") {
+      geometry.coordinates.forEach(ring => {
+        group.appendChild(svgElement("path", {
           d: pathFromCoordinates(ring),
-          class: "country",
-          fill: "#e9edf2",
-          stroke: "#cbd3dd",
-          "stroke-width": "0.65",
-          "stroke-linejoin": "round"
+          class: "country"
         }));
       });
-    } else if (type === "MultiPolygon") {
-      coordinates.forEach(poly => {
-        renderGeometry({ type: "Polygon", coordinates: poly }, group);
+    } else if (geometry.type === "MultiPolygon") {
+      geometry.coordinates.forEach(polygon => {
+        renderGeometry({ type: "Polygon", coordinates: polygon }, group);
       });
-    } else if (type === "GeometryCollection") {
+    } else if (geometry.type === "GeometryCollection") {
       geometry.geometries.forEach(item => renderGeometry(item, group));
     }
   }
 
-  function renderStops() {
+  function drawStops() {
     stops.forEach((stop, index) => {
       const p = project(stop.lon, stop.lat);
-      svg.appendChild(createSvgElement("circle", {
+
+      const dot = svgElement("circle", {
         cx: p.x,
         cy: p.y,
         r: 5.5,
         class: "stop-dot",
         "data-stop-index": index
-      }));
+      });
+
+      const label = svgElement("text", {
+        x: p.x + 10,
+        y: p.y - 10,
+        class: "stop-label"
+      });
+      label.textContent = stop.name;
+
+      svg.append(dot, label);
     });
   }
 
@@ -126,14 +133,14 @@
     const route = activeRoute;
     if (!route || route.length < 2) return;
 
-    const end = Math.max(1, Math.min(route.length - 1, routeIndex));
-    const points = route.slice(0, end + 1);
-    const last = route[end];
-    const prev = route[end - 1];
+    const endIndex = Math.max(1, Math.min(route.length - 1, routeIndex));
+    const points = route.slice(0, endIndex + 1);
+    const previous = route[endIndex - 1];
+    const current = route[endIndex];
 
     points.push([
-      prev[0] + (last[0] - prev[0]) * fraction,
-      prev[1] + (last[1] - prev[1]) * fraction
+      previous[0] + (current[0] - previous[0]) * fraction,
+      previous[1] + (current[1] - previous[1]) * fraction
     ]);
 
     progressPath.setAttribute("d", pathFromCoordinates(points));
@@ -144,23 +151,31 @@
     const scaled = Math.max(0, Math.min(1, fraction)) * (route.length - 1);
     const index = Math.min(route.length - 2, Math.floor(scaled));
     const t = scaled - index;
+
     const a = route[index];
     const b = route[index + 1];
 
-    const p = project(
-      a[0] + (b[0] - a[0]) * t,
-      a[1] + (b[1] - a[1]) * t
-    );
+    const lon = a[0] + (b[0] - a[0]) * t;
+    const lat = a[1] + (b[1] - a[1]) * t;
+    const point = project(lon, lat);
+
+    const nextPoint = project(b[0], b[1]);
+    const previousPoint = project(a[0], a[1]);
+    const angle = Math.atan2(
+      nextPoint.y - previousPoint.y,
+      nextPoint.x - previousPoint.x
+    ) * 180 / Math.PI;
 
     const rect = svg.getBoundingClientRect();
-    const vb = svg.viewBox.baseVal;
-    const scale = Math.min(rect.width / vb.width, rect.height / vb.height);
-    const offsetX = (rect.width - vb.width * scale) / 2;
-    const offsetY = (rect.height - vb.height * scale) / 2;
+    const viewBox = svg.viewBox.baseVal;
+    const scale = Math.min(rect.width / viewBox.width, rect.height / viewBox.height);
+    const offsetX = (rect.width - viewBox.width * scale) / 2;
+    const offsetY = (rect.height - viewBox.height * scale) / 2;
 
     return {
-      x: offsetX + p.x * scale,
-      y: offsetY + p.y * scale
+      x: offsetX + point.x * scale,
+      y: offsetY + point.y * scale,
+      angle
     };
   }
 
@@ -171,21 +186,22 @@
 
       const geojson = await response.json();
 
-      svg = createSvgElement("svg", {
+      svg = svgElement("svg", {
         viewBox: "0 0 1000 700",
         preserveAspectRatio: "xMidYMid meet",
         role: "img",
-        "aria-label": "Mapa del recorrido por España"
+        "aria-label": "Mapa horizontal del recorrido por España"
       });
 
       mapElement.replaceChildren(svg);
 
+      // Proyección plana: no inclina ni rota el mapa.
       projection = (lon, lat) => ({
         x: ((lon + 6.2) / 10.2) * 1000,
         y: ((44.8 - lat) / 9.0) * 700
       });
 
-      const countries = createSvgElement("g");
+      const countries = svgElement("g");
       const features = geojson.type === "FeatureCollection"
         ? geojson.features
         : geojson.type === "Feature"
@@ -195,11 +211,11 @@
       features.forEach(feature => renderGeometry(feature.geometry, countries));
       svg.appendChild(countries);
 
-      routePath = createSvgElement("path", { class: "travel-route" });
-      progressPath = createSvgElement("path", { class: "route-progress" });
+      routePath = svgElement("path", { class: "travel-route" });
+      progressPath = svgElement("path", { class: "route-progress" });
       svg.append(routePath, progressPath);
 
-      renderStops();
+      drawStops();
       drawRoute(roadRoute);
 
       window.TripMap = {
@@ -210,22 +226,19 @@
         setProgress,
         positionAtRouteFraction,
 
-        projectStop(index) {
-          const stop = stops[index];
-          return project(stop.lon, stop.lat);
-        },
-
-        updateStopStates(currentIndex, visited) {
+        updateStopStates(currentIndex, visitedIndexes) {
           svg.querySelectorAll(".stop-dot").forEach((dot, index) => {
             dot.classList.toggle("current", index === currentIndex);
-            dot.classList.toggle("visited", visited.includes(index));
+            dot.classList.toggle("visited", visitedIndexes.includes(index));
           });
         }
       };
+
+      window.dispatchEvent(new Event("trip-map-ready"));
     } catch (error) {
       console.error("Error al iniciar el mapa:", error);
       mapElement.innerHTML =
-        '<p class="map-error">No se ha podido cargar el mapa. Comprueba el GeoJSON y revisa la consola.</p>';
+        '<p class="map-error">No se ha podido cargar el mapa. Comprueba que existe assets/map/europe.geojson.</p>';
     }
   }
 
