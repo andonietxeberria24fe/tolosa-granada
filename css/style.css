@@ -1,179 +1,331 @@
-/* =========================================================
-   PANEL DE RECUERDO
-   ========================================================= */
+/* =========================================
+   PANTALLA INICIAL
+========================================= */
 
-.memory-panel {
-  position: absolute;
-  z-index: 20;
-
-  right: 350px;
-  bottom: 24px;
-
-  width: min(430px, calc(100% - 390px));
-  height: min(75%, 680px);
-
-  display: flex;
-  flex-direction: column;
-
-  overflow: hidden;
-
-  padding: 22px;
-
-  border: 1px solid rgba(255,255,255,.9);
-  border-radius: 24px;
-
-  background: var(--panel);
-
-  box-shadow: var(--shadow);
-
-  backdrop-filter: blur(22px);
-
-  transform:
-    translateY(calc(100% + 40px));
-
-  visibility: hidden;
-
-  transition:
-    transform .42s cubic-bezier(.22,1,.36,1),
-    visibility .42s;
-}
-
-.memory-panel.open {
-  transform: translateY(0);
-  visibility: visible;
-}
-
-.memory-top {
-  flex: 0 0 auto;
+.start-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
 
+  padding: 24px;
+
+  background: rgba(247, 248, 250, 0.96);
+
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+
+  transition:
+    opacity 0.45s ease,
+    visibility 0.45s ease;
+}
+
+.start-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.start-card {
+  width: min(520px, 100%);
+
+  padding: 38px;
+
+  border-radius: 30px;
+
+  background: rgba(255, 255, 255, 0.92);
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.12),
+    0 5px 20px rgba(0, 0, 0, 0.05);
+
+  text-align: center;
+}
+
+.start-eyebrow {
+  margin-bottom: 10px;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+
+  color: #8a8a8f;
+}
+
+.start-card h2 {
+  margin: 0 0 28px;
+
+  font-size: clamp(28px, 5vw, 38px);
+  line-height: 1.1;
+
+  letter-spacing: -0.04em;
+}
+
+
+/* OPCIONES */
+
+.trip-options {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+
+  margin-bottom: 26px;
 }
 
-.memory-content {
-  flex: 1 1 auto;
+.trip-option {
+  position: relative;
 
-  min-height: 0;
-
-  overflow-y: auto;
-
-  overscroll-behavior: contain;
-
-  padding: 14px 0 20px;
-}
-
-.memory-content h2 {
-  margin: 0 0 12px;
-
-  font-size: 27px;
-
-  letter-spacing: -.05em;
-}
-
-.memory-content p {
-  color: #596371;
-
-  font-size: 14px;
-
-  line-height: 1.65;
-
-  white-space: pre-line;
-}
-
-.memory-photos {
-  display: grid;
-
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
-  gap: 8px;
-
-  margin-top: 16px;
-}
-
-.memory-photos img {
-  display: block;
+  display: flex;
+  align-items: center;
 
   width: 100%;
 
-  aspect-ratio: 4 / 5;
+  padding: 17px 18px;
 
-  object-fit: cover;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
 
-  border-radius: 12px;
+  background: #fff;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-/* =========================================================
-   BOTÓN SEGUIMOS
-   ========================================================= */
+.trip-option:hover {
+  transform: translateY(-1px);
 
-.memory-actions {
-  flex: 0 0 auto;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.07);
+}
 
+.trip-option.selected {
+  border-color: #111;
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.trip-option-icon {
   display: flex;
-
+  align-items: center;
   justify-content: center;
 
+  width: 48px;
+  height: 48px;
+
+  flex: 0 0 48px;
+
+  border-radius: 15px;
+
+  background: #f2f2f7;
+
+  font-size: 23px;
+}
+
+.trip-option-text {
+  display: flex;
+  flex-direction: column;
+
+  margin-left: 14px;
+}
+
+.trip-option-text strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.trip-option-text small {
+  margin-top: 4px;
+
+  font-size: 13px;
+  color: #8a8a8f;
+}
+
+.trip-check {
+  margin-left: auto;
+
+  width: 25px;
+  height: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #111;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  opacity: 0;
+  transform: scale(0.7);
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.trip-option.selected .trip-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+
+/* BOTÓN SEGUIMOS INICIAL */
+
+#start-trip {
+  width: 100%;
+  min-height: 54px;
+
+  margin-top: 2px;
+
+  font-size: 16px;
+}
+
+
+/* VEHÍCULO */
+
+#vehicle {
+  position: absolute;
+
+  z-index: 30;
+
+  transform-origin: center center;
+
+  pointer-events: none;
+
+  /* Siempre mirando en la dirección correcta */
+  transform:
+    translate(-50%, -65%)
+    rotateX(180deg);
+
+  transition:
+    left 0.08s linear,
+    top 0.08s linear;
+}
+
+
+/* ETIQUETAS DE LAS PARADAS */
+
+.stop-label {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  fill: #111;
+
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+
+  pointer-events: none;
+}
+
+
+/* BOTÓN DEL PANEL */
+
+.memory-actions {
+  display: flex;
+  justify-content: center;
   align-items: center;
 
-  padding:
-    12px 0
-    max(8px, env(safe-area-inset-bottom));
-
-  background: var(--panel);
+  width: 100%;
 }
 
 .primary-button {
-  display: flex;
-
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  gap: 30px;
+  gap: 12px;
 
   min-width: 190px;
+  min-height: 52px;
 
-  padding: 14px 22px;
+  padding: 0 24px;
 
   border: 0;
+  border-radius: 18px;
 
-  border-radius: 999px;
+  background: #111;
+  color: #fff;
 
-  background: var(--accent);
+  font-size: 16px;
+  font-weight: 700;
 
-  color: white;
-
-  font-weight: 650;
+  cursor: pointer;
 
   box-shadow:
-    0 6px 18px rgba(30,42,60,.16);
+    0 8px 22px rgba(0, 0, 0, 0.16);
 
   transition:
-    transform .18s ease,
-    box-shadow .18s ease,
-    opacity .18s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .primary-button:hover {
   transform: translateY(-1px);
 
   box-shadow:
-    0 8px 22px rgba(30,42,60,.20);
-}
-
-.primary-button:active {
-  transform: scale(.97);
-}
-
-.primary-button:disabled {
-  opacity: .55;
-  cursor: wait;
+    0 11px 28px rgba(0, 0, 0, 0.20);
 }
 
 .primary-button span {
-  font-size: 20px;
-  line-height: 1;
+  font-size: 21px;
+}
+
+
+/* MÓVIL */
+
+@media (max-width: 600px) {
+
+  .start-card {
+    padding: 28px 20px;
+
+    border-radius: 26px;
+  }
+
+  .start-card h2 {
+    font-size: 29px;
+  }
+
+  .trip-option {
+    padding: 14px;
+  }
+
+  .trip-option-icon {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+  .trip-option-text strong {
+    font-size: 15px;
+  }
+
+  .trip-option-text small {
+    font-size: 12px;
+  }
+
+  .primary-button {
+    min-width: 180px;
+  }
+
 }
