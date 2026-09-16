@@ -1,96 +1,81 @@
 (() => {
-  const memories = [
-    {
-      title: "Tolosa",
-      text: [
-        "Aquí empieza nuestro viaje.",
-        "En este espacio pondremos el primer recuerdo, una pequeña carta o una foto."
-      ],
-      images: []
-    },
-    {
-      title: "Alegui",
-      text: [
-        "Primer recuerdo del camino.",
-        "Aquí puedes escribir qué pasó, qué te hizo gracia o qué quieres que recuerde."
-      ],
-      images: []
-    },
-    {
-      title: "Aizkorri",
-      text: [
-        "Un lugar especial para nosotras.",
-        "Aquí podemos poner una anécdota de la montaña, una carta o una foto."
-      ],
-      images: []
-    },
-    {
-      title: "Óbanos",
-      text: [
-        "Otra parada de nuestro recorrido.",
-        "Este texto es provisional: después lo sustituiremos por tu recuerdo."
-      ],
-      images: []
-    },
-    {
-      title: "Oropesa",
-      text: [
-        "Aquí empieza otra parte del viaje.",
-        "Añadiremos aquí las palabras y las imágenes que quieras."
-      ],
-      images: []
-    },
-    {
-      title: "Benidorm",
-      text: [
-        "Una parada más antes de llegar.",
-        "Puedes poner una historia, una foto o una frase que tenga significado para vosotras."
-      ],
-      images: []
-    },
-    {
-      title: "Granada",
-      text: [
-        "Llegamos al destino.",
-        "Aquí podemos guardar el mensaje final, una carta más larga o una foto especial."
-      ],
-      images: []
-    }
-  ];
+  "use strict";
 
-  function openMemory(index) {
-    const memory = memories[index];
+  const memories = {
+    tolosa: {
+      title: "Tolosa",
+      text: "Aquí empieza nuestro viaje. Añade aquí la carta de bienvenida o el recuerdo que quieras compartir.",
+      photos: []
+    },
+    aizkorri: {
+      title: "Aizkorri",
+      text: "Escribe aquí el recuerdo de esta parada.",
+      photos: []
+    },
+    obanos: {
+      title: "Óbanos",
+      text: "Escribe aquí el recuerdo de esta parada.",
+      photos: []
+    },
+    oropesa: {
+      title: "Oropesa",
+      text: "Escribe aquí el recuerdo de esta parada.",
+      photos: []
+    },
+    benidorm: {
+      title: "Benidorm",
+      text: "Escribe aquí el recuerdo de esta parada.",
+      photos: []
+    },
+    granada: {
+      title: "Granada",
+      text: "Aquí puedes poner la carta final y las últimas fotos del viaje.",
+      photos: []
+    }
+  };
+
+  const panel = document.getElementById("memory-panel");
+  const content = document.getElementById("memory-content");
+
+  function openMemory(id) {
+    const memory = memories[id];
     if (!memory) return;
 
-    const panel = document.getElementById("memory-panel");
-    const title = document.getElementById("memory-title");
-    const content = document.getElementById("memory-content");
-
-    title.textContent = memory.title;
     content.replaceChildren();
 
-    memory.text.forEach(paragraphText => {
-      const paragraph = document.createElement("p");
-      paragraph.textContent = paragraphText;
-      content.appendChild(paragraph);
-    });
+    const title = document.createElement("h2");
+    title.textContent = memory.title;
+    content.appendChild(title);
 
-    memory.images.forEach(imagePath => {
-      const image = document.createElement("img");
-      image.src = imagePath;
-      image.alt = `Recuerdo de ${memory.title}`;
-      content.appendChild(image);
-    });
+    const paragraph = document.createElement("p");
+    paragraph.textContent = memory.text;
+    content.appendChild(paragraph);
 
-    panel.hidden = false;
+    if (memory.photos.length) {
+      const gallery = document.createElement("div");
+      gallery.className = "memory-photos";
+
+      memory.photos.forEach(src => {
+        const image = document.createElement("img");
+        image.src = src;
+        image.alt = `Recuerdo de ${memory.title}`;
+        image.loading = "lazy";
+        gallery.appendChild(image);
+      });
+
+      content.appendChild(gallery);
+    }
+
+    panel.classList.add("open");
+    panel.setAttribute("aria-hidden", "false");
   }
 
   function closeMemory() {
-    document.getElementById("memory-panel").hidden = true;
+    panel.classList.remove("open");
+    panel.setAttribute("aria-hidden", "true");
   }
 
-  window.TripGallery = {
-    openMemory,
-    closeMemory
-  };
+  document.getElementById("close-memory").addEventListener("click", closeMemory);
+
+  window.TripGallery = { openMemory, closeMemory, memories };
 })();
