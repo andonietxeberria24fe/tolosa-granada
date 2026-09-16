@@ -7,34 +7,40 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <h1>Tolosa <span>→</span> Granada</h1>
-    <p>Un viaje, muchos recuerdos</p>
-  </header>
+  <div id="app">
+    <header class="main-header">
+      <span class="header-kicker">UN VIAJE, MUCHOS RECUERDOS</span>
+      <h1>Tolosa <span>→</span> Granada</h1>
+    </header>
 
-  <main>
-    <nav class="modes" aria-label="Formas de ver el viaje">
-      <button id="direct-mode" class="mode-button active">
-        Tolosa → Granada
-      </button>
-      <button id="road-mode" class="mode-button">
-        El viaje de verdad
-      </button>
+    <nav class="modes" aria-label="Modo de recorrido">
+      <button class="mode-button active" id="road-mode">El viaje de verdad</button>
+      <button class="mode-button" id="direct-mode">Tolosa → Granada</button>
     </nav>
 
-    <section class="map-card">
-      <div id="map" aria-label="Mapa del recorrido"></div>
-      <p id="status">Preparando el recorrido…</p>
-      <button id="next-stop" class="next-button">Seguimos →</button>
-    </section>
+    <main>
+      <section id="map-container" aria-label="Mapa del viaje">
+        <div id="map"></div>
+        <div id="car" aria-label="Coche del viaje">🚙</div>
+      </section>
 
-    <section id="memory-panel" class="memory-panel" hidden>
-      <button id="close-memory" class="close-button" aria-label="Cerrar">×</button>
-      <p class="eyebrow">PARADA</p>
-      <h2 id="memory-title"></h2>
-      <div id="memory-content"></div>
-    </section>
-  </main>
+      <aside class="stops-panel" aria-label="Paradas del viaje">
+        <p class="panel-kicker">NUESTRO RECORRIDO</p>
+        <h2>Las paradas</h2>
+        <ol id="stop-list"></ol>
+        <button id="next-stop" class="next-button">Seguimos <span>→</span></button>
+        <p id="status" aria-live="polite">Preparando el recorrido…</p>
+      </aside>
+
+      <section id="memory-panel" class="memory-panel" hidden>
+        <button id="close-memory" class="close-button" aria-label="Cerrar recuerdo">×</button>
+        <span class="panel-kicker">UN RECUERDO DE ESTE VIAJE</span>
+        <h2 id="memory-title"></h2>
+        <div id="memory-content"></div>
+        <button id="memory-continue" class="next-button">Seguimos <span>→</span></button>
+      </section>
+    </main>
+  </div>
 
   <script src="js/map.js"></script>
   <script src="js/gallery.js"></script>
