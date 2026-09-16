@@ -1,17 +1,16 @@
 (() => {
   "use strict";
 
-  const mapReady = () => Boolean(window.TripMap);
-
   const allStops = [
-    { id: "tolosa", name: "Tolosa", road: 0, direct: 0 },
-    { id: "aizkorri", name: "Aizkorri", road: 1, direct: null },
-    { id: "obanos", name: "Óbanos", road: 2, direct: null },
-    { id: "oropesa", name: "Oropesa", road: 3, direct: null },
-    { id: "benidorm", name: "Benidorm", road: 4, direct: null },
-    { id: "granada", name: "Granada", road: 5, direct: 1 }
+    { id: "tolosa", name: "Tolosa", mapIndex: 0 },
+    { id: "aizkorri", name: "Aizkorri", mapIndex: 1 },
+    { id: "obanos", name: "Óbanos", mapIndex: 2 },
+    { id: "oropesa", name: "Oropesa", mapIndex: 3 },
+    { id: "benidorm", name: "Benidorm", mapIndex: 4 },
+    { id: "granada", name: "Granada", mapIndex: 5 }
   ];
 
+  // Posiciones aproximadas dentro del trazado de roadRoute.
   const roadFractions = [0, 0.13, 0.25, 0.53, 0.70, 1];
   const directFractions = [0, 1];
 
@@ -27,9 +26,13 @@
   let mode = "real";
   let visibleStops = allStops;
   let currentStop = 0;
-  let visited = [];
+  let visitedMapIndexes = [0];
   let animationFrame = null;
   let isMoving = false;
+
+  function mapReady() {
+    return Boolean(window.TripMap);
+  }
 
   function isMobile() {
     return window.matchMedia("(max-width: 760px)").matches;
@@ -41,7 +44,7 @@
   }
 
   function closeMemory() {
-    window.TripGallery.closeMemory();
+    window.TripGallery?.closeMemory();
   }
 
   function getFractions() {
@@ -90,9 +93,14 @@
 
   function positionVehicle(fraction) {
     if (!mapReady()) return;
+
     const point = window.TripMap.positionAtRouteFraction(fraction);
     vehicle.style.left = `${point.x}px`;
     vehicle.style.top = `${point.y}px`;
+
+    // El emoji se orienta según la dirección de la ruta.
+    vehicle.style.transform =
+      `translate(-50%, -65%) rotate(${point.angle}deg)`;
   }
 
   function updateProgress(fraction) {
@@ -109,8 +117,8 @@
     positionVehicle(fraction);
   }
 
-  function setStatus(text) {
-    status.textContent = text;
+  function setStatus(message) {
+    status.textContent = message;
   }
 
   function openCurrentMemory() {
@@ -125,24 +133,30 @@
   function goToStop(index, showMemory) {
     if (!mapReady()) return;
 
-    if (animationFrame) cancelAnimationFrame(animationFrame);
+    if (animationFrame !== null) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    }
 
     currentStop = Math.max(0, Math.min(index, visibleStops.length - 1));
-    visited = [...new Set([...visited, currentStop])];
-    updateList();
 
+    const mapIndex = visibleStops[currentStop].mapIndex;
+    if (!visitedMapIndexes.includes(mapIndex)) {
+      visitedMapIndexes.push(mapIndex);
+    }
+
+    updateList();
     updateProgress(getFractions()[currentStop]);
 
-    const actualStopIndex = allStops.findIndex(
-      stop => stop.id === visibleStops[currentStop].id
-    );
+    window.TripMap.updateStopStates(mapIndex, visitedMapIndexes);
 
-    window.TripMap.updateStopStates(actualStopIndex, visited);
-
-    if (showMemory) openCurrentMemory();
-    else setStatus(currentStop === 0
-      ? "Preparados para salir"
-      : `En ${visibleStops[currentStop].name}`);
+    if (showMemory) {
+      openCurrentMemory();
+    } else {
+      setStatus(currentStop === 0
+        ? "Preparados para salir"
+        : `En ${visibleStops[currentStop].name}`);
+    }
   }
 
   function travelToStop(nextIndex) {
@@ -155,19 +169,21 @@
     const start = fractions[currentStop];
     const end = fractions[nextIndex];
 
-    // Vuelo directo: 1,5 segundos. Viaje real: desplazamiento más lento.
     const duration = mode === "direct"
       ? 1500
       : Math.max(2400, Math.min(9500, Math.abs(end - start) * 14500));
 
     const startTime = performance.now();
     isMoving = true;
+    continueButton.disabled = true;
     vehicle.textContent = mode === "direct" ? "✈️" : "🚙";
     setStatus(`En camino a ${visibleStops[nextIndex].name}…`);
 
     function frame(now) {
       const progress = Math.min(1, (now - startTime) / duration);
-      updateProgress(start + (end - start) * progress);
+      const eased = progress * progress * (3 - 2 * progress);
+
+      updateProgress(start + (end - start) * eased);
 
       if (progress < 1) {
         animationFrame = requestAnimationFrame(frame);
@@ -176,15 +192,16 @@
 
       animationFrame = null;
       isMoving = false;
+      continueButton.disabled = false;
       currentStop = nextIndex;
-      visited = [...new Set([...visited, currentStop])];
+
+      const mapIndex = visibleStops[currentStop].mapIndex;
+      if (!visitedMapIndexes.includes(mapIndex)) {
+        visitedMapIndexes.push(mapIndex);
+      }
+
       updateList();
-
-      const actualStopIndex = allStops.findIndex(
-        stop => stop.id === visibleStops[currentStop].id
-      );
-
-      window.TripMap.updateStopStates(actualStopIndex, visited);
+      window.TripMap.updateStopStates(mapIndex, visitedMapIndexes);
       openCurrentMemory();
     }
 
@@ -192,15 +209,18 @@
   }
 
   function chooseMode(nextMode) {
-    if (isMoving && animationFrame) {
+    if (!mapReady()) return;
+
+    if (animationFrame !== null) {
       cancelAnimationFrame(animationFrame);
+      animationFrame = null;
     }
 
-    animationFrame = null;
     isMoving = false;
+    continueButton.disabled = false;
     mode = nextMode;
     currentStop = 0;
-    visited = [0];
+    visitedMapIndexes = [0];
 
     closeMemory();
     showStops(false);
@@ -235,6 +255,8 @@
   closeStopsButton.addEventListener("click", () => showStops(false));
 
   continueButton.addEventListener("click", () => {
+    if (isMoving) return;
+
     if (currentStop >= visibleStops.length - 1) {
       closeMemory();
       setStatus("Viaje terminado. ¡Gracias por compartirlo!");
@@ -257,9 +279,13 @@
     }
   });
 
-  const waitForMap = setInterval(() => {
-    if (!mapReady()) return;
-    clearInterval(waitForMap);
-    chooseMode("real");
-  }, 100);
+  function startWhenMapReady() {
+    if (mapReady()) {
+      chooseMode("real");
+    } else {
+      window.addEventListener("trip-map-ready", () => chooseMode("real"), { once: true });
+    }
+  }
+
+  startWhenMapReady();
 })();
