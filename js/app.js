@@ -1,16 +1,17 @@
 (() => {
   "use strict";
 
+  const mapReady = () => Boolean(window.TripMap);
+
   const allStops = [
-    { id: "tolosa", name: "Tolosa" },
-    { id: "aizkorri", name: "Aizkorri" },
-    { id: "obanos", name: "Óbanos" },
-    { id: "oropesa", name: "Oropesa" },
-    { id: "benidorm", name: "Benidorm" },
-    { id: "granada", name: "Granada" }
+    { id: "tolosa", name: "Tolosa", road: 0, direct: 0 },
+    { id: "aizkorri", name: "Aizkorri", road: 1, direct: null },
+    { id: "obanos", name: "Óbanos", road: 2, direct: null },
+    { id: "oropesa", name: "Oropesa", road: 3, direct: null },
+    { id: "benidorm", name: "Benidorm", road: 4, direct: null },
+    { id: "granada", name: "Granada", road: 5, direct: 1 }
   ];
 
-  // Fracción aproximada del recorrido donde se encuentra cada parada.
   const roadFractions = [0, 0.13, 0.25, 0.53, 0.70, 1];
   const directFractions = [0, 1];
 
@@ -30,8 +31,6 @@
   let animationFrame = null;
   let isMoving = false;
 
-  const mapReady = () => Boolean(window.TripMap);
-
   function isMobile() {
     return window.matchMedia("(max-width: 760px)").matches;
   }
@@ -42,15 +41,11 @@
   }
 
   function closeMemory() {
-    window.TripGallery?.closeMemory();
+    window.TripGallery.closeMemory();
   }
 
   function getFractions() {
     return mode === "direct" ? directFractions : roadFractions;
-  }
-
-  function actualStopIndex(visibleIndex) {
-    return allStops.findIndex(stop => stop.id === visibleStops[visibleIndex]?.id);
   }
 
   function renderStops() {
@@ -93,9 +88,8 @@
     });
   }
 
-  function updateVehiclePosition(fraction) {
+  function positionVehicle(fraction) {
     if (!mapReady()) return;
-
     const point = window.TripMap.positionAtRouteFraction(fraction);
     vehicle.style.left = `${point.x}px`;
     vehicle.style.top = `${point.y}px`;
@@ -104,8 +98,15 @@
   function updateProgress(fraction) {
     if (!mapReady()) return;
 
-    window.TripMap.setProgress(fraction);
-    updateVehiclePosition(fraction);
+    const route = mode === "direct"
+      ? window.TripMap.directRoute
+      : window.TripMap.roadRoute;
+
+    const scaled = Math.max(0, Math.min(1, fraction)) * (route.length - 1);
+    const index = Math.min(route.length - 2, Math.floor(scaled));
+
+    window.TripMap.setProgress(index, scaled - index);
+    positionVehicle(fraction);
   }
 
   function setStatus(text) {
@@ -117,39 +118,33 @@
     if (!stop) return;
 
     closeMemory();
-    window.TripGallery?.openMemory(stop.id);
+    window.TripGallery.openMemory(stop.id);
     setStatus(`Has llegado a ${stop.name}`);
   }
 
   function goToStop(index, showMemory) {
     if (!mapReady()) return;
 
-    if (animationFrame !== null) {
-      cancelAnimationFrame(animationFrame);
-      animationFrame = null;
-    }
+    if (animationFrame) cancelAnimationFrame(animationFrame);
 
     currentStop = Math.max(0, Math.min(index, visibleStops.length - 1));
-    visited = [...new Set([...visited, actualStopIndex(currentStop)])];
-
+    visited = [...new Set([...visited, currentStop])];
     updateList();
+
     updateProgress(getFractions()[currentStop]);
 
-    window.TripMap.updateStopStates(actualStopIndex(currentStop), visited);
+    const actualStopIndex = allStops.findIndex(
+      stop => stop.id === visibleStops[currentStop].id
+    );
 
-    if (showMemory) {
-      openCurrentMemory();
-    } else {
-      setStatus(currentStop === 0 ? "Preparados para salir" : `En ${visibleStops[currentStop].name}`);
-    }
+    window.TripMap.updateStopStates(actualStopIndex, visited);
 
-    continueButton.disabled = false;
-    continueButton.innerHTML = currentStop >= visibleStops.length - 1
-      ? 'Finalizar <span>✓</span>'
-      : 'Seguimos <span>→</span>';
+    if (showMemory) openCurrentMemory();
+    else setStatus(currentStop === 0
+      ? "Preparados para salir"
+      : `En ${visibleStops[currentStop].name}`);
   }
 
-  // Desplazamiento suave. El avión tarda 1,5 segundos en llegar a Granada.
   function travelToStop(nextIndex) {
     if (!mapReady() || isMoving || nextIndex >= visibleStops.length) return;
 
@@ -160,9 +155,10 @@
     const start = fractions[currentStop];
     const end = fractions[nextIndex];
 
+    // Vuelo directo: 1,5 segundos. Viaje real: desplazamiento más lento.
     const duration = mode === "direct"
       ? 1500
-      : Math.max(3500, Math.min(9000, Math.abs(end - start) * 14500));
+      : Math.max(2400, Math.min(9500, Math.abs(end - start) * 14500));
 
     const startTime = performance.now();
     isMoving = true;
@@ -171,10 +167,7 @@
 
     function frame(now) {
       const progress = Math.min(1, (now - startTime) / duration);
-
-      // Suaviza el inicio y el final sin dar sensación de velocidad brusca.
-      const eased = progress * progress * (3 - 2 * progress);
-      updateProgress(start + (end - start) * eased);
+      updateProgress(start + (end - start) * progress);
 
       if (progress < 1) {
         animationFrame = requestAnimationFrame(frame);
@@ -184,28 +177,26 @@
       animationFrame = null;
       isMoving = false;
       currentStop = nextIndex;
-
-      visited = [...new Set([...visited, actualStopIndex(currentStop)])];
+      visited = [...new Set([...visited, currentStop])];
       updateList();
-      window.TripMap.updateStopStates(actualStopIndex(currentStop), visited);
 
+      const actualStopIndex = allStops.findIndex(
+        stop => stop.id === visibleStops[currentStop].id
+      );
+
+      window.TripMap.updateStopStates(actualStopIndex, visited);
       openCurrentMemory();
-
-      continueButton.disabled = false;
-      continueButton.innerHTML = currentStop >= visibleStops.length - 1
-        ? 'Finalizar <span>✓</span>'
-        : 'Seguimos <span>→</span>';
     }
 
     animationFrame = requestAnimationFrame(frame);
   }
 
   function chooseMode(nextMode) {
-    if (isMoving && animationFrame !== null) {
+    if (isMoving && animationFrame) {
       cancelAnimationFrame(animationFrame);
-      animationFrame = null;
     }
 
+    animationFrame = null;
     isMoving = false;
     mode = nextMode;
     currentStop = 0;
@@ -222,18 +213,15 @@
       visibleStops = [allStops[0], allStops[5]];
       vehicle.textContent = "✈️";
       window.TripMap.drawRoute(window.TripMap.directRoute);
-      window.TripMap.setVisibleStops([0, 5]);
-      setStatus("Vuelo directo desde Tolosa");
     } else {
       visibleStops = allStops;
       vehicle.textContent = "🚙";
       window.TripMap.drawRoute(window.TripMap.roadRoute);
-      window.TripMap.setVisibleStops([0, 1, 2, 3, 4, 5]);
-      setStatus("Preparados para salir");
     }
 
     renderStops();
     goToStop(0, false);
+    setStatus(mode === "direct" ? "Salida desde Tolosa" : "Preparados para salir");
   }
 
   document.querySelectorAll(".mode-button").forEach(button => {
@@ -247,20 +235,14 @@
   closeStopsButton.addEventListener("click", () => showStops(false));
 
   continueButton.addEventListener("click", () => {
-    if (isMoving) return;
-
     if (currentStop >= visibleStops.length - 1) {
       closeMemory();
       setStatus("Viaje terminado. ¡Gracias por compartirlo!");
-      continueButton.disabled = true;
-      continueButton.innerHTML = 'Viaje terminado <span>✓</span>';
       return;
     }
 
     travelToStop(currentStop + 1);
   });
-
-  document.getElementById("close-memory").addEventListener("click", closeMemory);
 
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") {
