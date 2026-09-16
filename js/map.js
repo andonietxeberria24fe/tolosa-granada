@@ -82,8 +82,9 @@
       coordinates.forEach(ring => {
         const path = createSvgElement("path", {
           d: pathFromCoordinates(ring),
-          fill: "#f0f2f5",
-          stroke: "#dce1e7",
+          class: "country",
+          fill: "#e9edf2",
+          stroke: "#cbd3dd",
           "stroke-width": "0.65",
           "stroke-linejoin": "round",
           "vector-effect": "non-scaling-stroke"
@@ -178,7 +179,7 @@
 
   async function init() {
     try {
-      const response = await fetch("./assets/map/europe.geojson");
+      const response = await fetch("/tolosa-granada/assets/map/europe.geojson");
 
       if (!response.ok) {
         throw new Error(`No se pudo cargar el GeoJSON: HTTP ${response.status}`);
