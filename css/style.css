@@ -186,3 +186,43 @@ main {
     padding: 20px;
   }
 }
+#map {
+  min-height: 0;
+}
+
+#map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.land-shape {
+  fill: #e3e9df;
+  stroke: #b7c5b6;
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+
+.route-line {
+  fill: none;
+  stroke: #47745d;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stop-marker {
+  fill: #ffffff;
+  stroke: #47745d;
+  stroke-width: 3;
+}
+
+.stop-label {
+  fill: #26332f;
+  font-size: 15px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
