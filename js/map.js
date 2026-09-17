@@ -2,82 +2,102 @@
   "use strict";
 
   const stops = [
-    { id: "tolosa", name: "Tolosa", lat: 43.135, lon: -2.078 },
-    { id: "aizkorri", name: "Aizkorri", lat: 42.960, lon: -2.330 },
-    { id: "obanos", name: "Óbanos", lat: 42.680, lon: -1.785 },
-    { id: "oropesa", name: "Oropesa", lat: 40.092, lon: 0.135 },
-    { id: "benidorm", name: "Benidorm", lat: 38.541, lon: -0.122 },
-    { id: "granada", name: "Granada", lat: 37.177, lon: -3.598 }
+    {
+      id: "tolosa",
+      name: "Tolosa",
+      lat: 43.135,
+      lon: -2.078
+    },
+    {
+      id: "aizkorri",
+      name: "Aizkorri",
+      lat: 42.960,
+      lon: -2.330
+    },
+    {
+      id: "obanos",
+      name: "Óbanos",
+      lat: 42.680,
+      lon: -1.785
+    },
+    {
+      id: "oropesa",
+      name: "Oropesa",
+      lat: 40.092,
+      lon: 0.135
+    },
+    {
+      id: "benidorm",
+      name: "Benidorm",
+      lat: 38.541,
+      lon: -0.122
+    },
+    {
+      id: "granada",
+      name: "Granada",
+      lat: 37.177,
+      lon: -3.598
+    }
   ];
+
+  /*
+   * Oropesa → Benidorm se lleva deliberadamente hacia el interior.
+   * De esta forma el recorrido baja bastante hacia la izquierda
+   * antes de volver hacia Benidorm.
+   */
 
   const roadRoute = [
     [-2.078, 43.135],
     [-2.16, 43.05],
     [-2.33, 42.96],
+
     [-2.15, 42.83],
     [-1.785, 42.68],
-    [-1.45, 42.45],
+
     [-1.20, 42.25],
-    [-0.85, 41.95],
     [-0.55, 41.65],
-    [-0.25, 41.35],
     [-0.10, 41.15],
-    [-0.05, 40.95],
-    [0.02, 40.75],
-    [0.10, 40.55],
-    [0.13, 40.30],
-    [0.13, 40.092],
-    [0.08, 39.90],
-    [0.02, 39.70],
-    [-0.02, 39.45],
-    [-0.08, 39.15],
-    [-0.12, 38.85],
+
+    [0.10, 40.75],
+    [0.135, 40.092],
+
+    /* Oropesa → interior → Benidorm */
+    [-0.22, 39.88],
+    [-0.58, 39.62],
+    [-0.98, 39.28],
+    [-1.08, 38.98],
+    [-0.84, 38.72],
+    [-0.48, 38.60],
+
     [-0.122, 38.541],
-    [-0.30, 38.45],
+
     [-0.55, 38.25],
-    [-0.90, 38.05],
     [-1.20, 37.75],
-    [-1.60, 37.55],
     [-2.05, 37.35],
-    [-2.60, 37.25],
-    [-3.10, 37.20],
+
     [-3.598, 37.177]
   ];
 
   const directRoute = [
     [-2.078, 43.135],
+    [-1.70, 42.20],
+    [-1.20, 41.20],
+    [-0.70, 40.20],
+    [-0.30, 39.20],
+    [-0.80, 38.50],
+    [-1.80, 37.80],
     [-3.598, 37.177]
   ];
 
-  const roadStopIndexes = {
-    tolosa: 0,
-    aizkorri: 2,
-    obanos: 4,
-    oropesa: 15,
-    benidorm: 21,
-    granada: 30
-  };
+  const mapElement =
+    document.getElementById("map");
 
-  const mapElement = document.getElementById("map");
-
-  let svg;
-  let routePath;
-  let progressPath;
-  let projection;
+  let svg = null;
+  let routePath = null;
+  let progressPath = null;
+  let projection = null;
+  let stopLayer = null;
   let activeRoute = roadRoute;
-
-  function createSvgElement(name, attrs = {}) {
-    const node = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      name
-    );
-
-    Object.entries(attrs).forEach(([key, value]) => {
-      node.setAttribute(key, String(value));
-    });
-
-    return node;
-  }
 
   function project(lon, lat) {
     return projection
@@ -85,238 +105,680 @@
       : { x: 0, y: 0 };
   }
 
-  function pathFromCoordinates(coords) {
-    return coords.map((point, index) => {
-      const p = project(point[0], point[1]);
-      return `${index === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`;
-    }).join(" ");
+  function createSvgElement(
+    name,
+    attrs = {}
+  ) {
+    const node =
+      document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        name
+      );
+
+    Object.entries(attrs).forEach(
+      ([key, value]) => {
+        node.setAttribute(
+          key,
+          value
+        );
+      }
+    );
+
+    return node;
   }
 
-  function renderGeometry(geometry, group) {
+  function pathFromCoordinates(coords) {
+    return coords
+      .map((point, index) => {
+        const p = project(
+          point[0],
+          point[1]
+        );
+
+        return `${
+          index === 0
+            ? "M"
+            : "L"
+        }${p.x.toFixed(2)},${p.y.toFixed(2)}`;
+      })
+      .join(" ");
+  }
+
+  /*
+   * Convierte los puntos del recorrido en una curva suave.
+   * Así el recorrido se ve mucho más natural que una sucesión
+   * de líneas rectas.
+   */
+  function smoothPathFromCoordinates(
+    coords
+  ) {
+    if (coords.length < 2) {
+      return "";
+    }
+
+    if (coords.length === 2) {
+      return pathFromCoordinates(
+        coords
+      );
+    }
+
+    const points = coords.map(
+      ([lon, lat]) =>
+        project(lon, lat)
+    );
+
+    let d =
+      `M ${points[0].x.toFixed(2)} ` +
+      `${points[0].y.toFixed(2)}`;
+
+    for (
+      let i = 0;
+      i < points.length - 1;
+      i += 1
+    ) {
+      const p0 =
+        points[i - 1] ||
+        points[i];
+
+      const p1 =
+        points[i];
+
+      const p2 =
+        points[i + 1];
+
+      const p3 =
+        points[i + 2] ||
+        p2;
+
+      const cp1x =
+        p1.x +
+        (p2.x - p0.x) /
+          6;
+
+      const cp1y =
+        p1.y +
+        (p2.y - p0.y) /
+          6;
+
+      const cp2x =
+        p2.x -
+        (p3.x - p1.x) /
+          6;
+
+      const cp2y =
+        p2.y -
+        (p3.y - p1.y) /
+          6;
+
+      d +=
+        ` C ${cp1x.toFixed(2)} ` +
+        `${cp1y.toFixed(2)}, ` +
+        `${cp2x.toFixed(2)} ` +
+        `${cp2y.toFixed(2)}, ` +
+        `${p2.x.toFixed(2)} ` +
+        `${p2.y.toFixed(2)}`;
+    }
+
+    return d;
+  }
+
+  function renderGeometry(
+    geometry,
+    group
+  ) {
     if (!geometry) return;
 
-    const { type, coordinates } = geometry;
+    const type =
+      geometry.type;
+
+    const coords =
+      geometry.coordinates;
 
     if (type === "Polygon") {
-      coordinates.forEach(ring => {
-        group.appendChild(createSvgElement("path", {
-          d: pathFromCoordinates(ring),
-          class: "country"
-        }));
+      coords.forEach(ring => {
+        group.appendChild(
+          createSvgElement(
+            "path",
+            {
+              d:
+                pathFromCoordinates(
+                  ring
+                ),
+              class: "country"
+            }
+          )
+        );
       });
-      return;
-    }
-
-    if (type === "MultiPolygon") {
-      coordinates.forEach(polygon => {
-        renderGeometry({ type: "Polygon", coordinates: polygon }, group);
+    } else if (
+      type === "MultiPolygon"
+    ) {
+      coords.forEach(poly => {
+        renderGeometry(
+          {
+            type:
+              "Polygon",
+            coordinates:
+              poly
+          },
+          group
+        );
       });
-      return;
-    }
-
-    if (type === "GeometryCollection") {
-      geometry.geometries.forEach(item => renderGeometry(item, group));
+    } else if (
+      type ===
+      "GeometryCollection"
+    ) {
+      geometry.geometries.forEach(
+        item =>
+          renderGeometry(
+            item,
+            group
+          )
+      );
     }
   }
 
   function renderStops() {
-    stops.forEach((stop, index) => {
-      const p = project(stop.lon, stop.lat);
+    stopLayer =
+      createSvgElement(
+        "g",
+        {
+          class: "stop-layer"
+        }
+      );
 
-      svg.appendChild(createSvgElement("circle", {
-        cx: p.x,
-        cy: p.y,
-        r: 5.5,
-        class: "stop-dot",
-        "data-stop-index": index
-      }));
-    });
-  }
+    stops.forEach(
+      (stop, index) => {
+        const p = project(
+          stop.lon,
+          stop.lat
+        );
 
-  function drawRoute(mode) {
-    activeRoute = mode === "direct" ? directRoute : roadRoute;
+        const circle =
+          createSvgElement(
+            "circle",
+            {
+              cx: p.x,
+              cy: p.y,
+              r: 5.5,
+              class:
+                "stop-dot",
+              "data-stop-index":
+                index
+            }
+          );
 
-    routePath.setAttribute("d", pathFromCoordinates(activeRoute));
-    progressPath.setAttribute("d", "");
-  }
-
-  function routeLengths(route) {
-    const lengths = [0];
-    let total = 0;
-
-    for (let i = 1; i < route.length; i++) {
-      const a = project(route[i - 1][0], route[i - 1][1]);
-      const b = project(route[i][0], route[i][1]);
-      total += Math.hypot(b.x - a.x, b.y - a.y);
-      lengths.push(total);
-    }
-
-    return { lengths, total };
-  }
-
-  // Dibuja la ruta completa hasta la fracción indicada: 0–1.
-  function setProgress(_routeIndex, fraction) {
-    if (!activeRoute || activeRoute.length < 2) return;
-
-    const safe = Math.max(0, Math.min(1, fraction));
-    const { lengths, total } = routeLengths(activeRoute);
-    if (!total) return;
-
-    const targetDistance = total * safe;
-    const points = [activeRoute[0]];
-
-    for (let i = 1; i < activeRoute.length; i++) {
-      if (lengths[i] < targetDistance) {
-        points.push(activeRoute[i]);
-        continue;
+        stopLayer.appendChild(
+          circle
+        );
       }
+    );
 
-      const segmentLength = lengths[i] - lengths[i - 1];
-      const t = segmentLength
-        ? (targetDistance - lengths[i - 1]) / segmentLength
-        : 0;
-
-      const a = activeRoute[i - 1];
-      const b = activeRoute[i];
-
-      points.push([
-        a[0] + (b[0] - a[0]) * t,
-        a[1] + (b[1] - a[1]) * t
-      ]);
-      break;
-    }
-
-    progressPath.setAttribute("d", pathFromCoordinates(points));
+    svg.appendChild(
+      stopLayer
+    );
   }
 
-  function positionAtRouteFraction(fraction) {
-    const route = activeRoute;
-    const safe = Math.max(0, Math.min(1, fraction));
-    const { lengths, total } = routeLengths(route);
+  function drawRoute(route) {
+    activeRoute = route;
 
-    if (!total) return null;
+    const d =
+      smoothPathFromCoordinates(
+        route
+      );
 
-    const targetDistance = total * safe;
-    let index = 1;
+    routePath.setAttribute(
+      "d",
+      d
+    );
 
-    while (index < lengths.length - 1 && lengths[index] < targetDistance) {
-      index++;
+    progressPath.setAttribute(
+      "d",
+      d
+    );
+
+    routePath.setAttribute(
+      "pathLength",
+      "1"
+    );
+
+    progressPath.setAttribute(
+      "pathLength",
+      "1"
+    );
+
+    progressPath.style.strokeDasharray =
+      "0 1";
+
+    progressPath.style.strokeDashoffset =
+      "0";
+  }
+
+  function setProgress(
+    fraction
+  ) {
+    if (!progressPath) {
+      return;
     }
 
-    const segmentLength = lengths[index] - lengths[index - 1];
-    const t = segmentLength
-      ? (targetDistance - lengths[index - 1]) / segmentLength
-      : 0;
+    const safe =
+      Math.max(
+        0,
+        Math.min(1, fraction)
+      );
 
-    const a = route[index - 1];
-    const b = route[index];
+    progressPath.style.strokeDasharray =
+      `${safe} 1`;
 
-    const p = project(
-      a[0] + (b[0] - a[0]) * t,
-      a[1] + (b[1] - a[1]) * t
-    );
+    progressPath.style.strokeDashoffset =
+      "0";
+  }
 
-    const rect = svg.getBoundingClientRect();
-    const viewBox = svg.viewBox.baseVal;
-    const scale = Math.min(
-      rect.width / viewBox.width,
-      rect.height / viewBox.height
-    );
+  function svgPointToContainer(
+    point
+  ) {
+    const matrix =
+      svg.getScreenCTM();
+
+    if (!matrix) {
+      return {
+        x: 0,
+        y: 0
+      };
+    }
+
+    const transformed =
+      new DOMPoint(
+        point.x,
+        point.y
+      ).matrixTransform(
+        matrix
+      );
+
+    const rect =
+      mapElement.getBoundingClientRect();
 
     return {
-      x: (rect.width - viewBox.width * scale) / 2 + p.x * scale,
-      y: (rect.height - viewBox.height * scale) / 2 + p.y * scale
+      x:
+        transformed.x -
+        rect.left,
+
+      y:
+        transformed.y -
+        rect.top
     };
   }
 
-  function getStopFraction(stopId) {
-    if (activeRoute === directRoute) {
-      return stopId === "tolosa" ? 0 : stopId === "granada" ? 1 : NaN;
+  function pointOnActiveRoute(
+    fraction,
+    lookAhead = 0.006
+  ) {
+    if (!routePath) {
+      return {
+        x: 0,
+        y: 0,
+        angle: 0
+      };
     }
 
-    const targetIndex = roadStopIndexes[stopId];
-    if (targetIndex === undefined) return NaN;
+    const length =
+      routePath.getTotalLength();
 
-    const { lengths, total } = routeLengths(roadRoute);
-    return total ? lengths[targetIndex] / total : 0;
+    const safeFraction =
+      Math.max(
+        0,
+        Math.min(1, fraction)
+      );
+
+    const distance =
+      safeFraction * length;
+
+    const p =
+      routePath.getPointAtLength(
+        distance
+      );
+
+    const aheadDistance =
+      Math.min(
+        length,
+        distance +
+          Math.max(
+            4,
+            length *
+              lookAhead
+          )
+      );
+
+    const ahead =
+      routePath.getPointAtLength(
+        aheadDistance
+      );
+
+    const current =
+      svgPointToContainer(p);
+
+    const next =
+      svgPointToContainer(
+        ahead
+      );
+
+    const angle =
+      Math.atan2(
+        next.y -
+          current.y,
+        next.x -
+          current.x
+      ) *
+      180 /
+      Math.PI;
+
+    return {
+      x: current.x,
+      y: current.y,
+      angle
+    };
   }
 
-  function updateStopStates(currentIndex, visited = []) {
-    if (!svg) return;
+  function positionAtRouteFraction(
+    fraction
+  ) {
+    return pointOnActiveRoute(
+      fraction
+    );
+  }
 
-    svg.querySelectorAll(".stop-dot").forEach((dot, index) => {
-      dot.classList.toggle("current", index === currentIndex);
-      dot.classList.toggle("visited", visited.includes(index));
-    });
+  /*
+   * Busca dónde está cada parada sobre la ruta real.
+   * Esto evita tener que mantener porcentajes a mano.
+   */
+  function getStopFraction(
+    stopIndex
+  ) {
+    if (!routePath) {
+      return 0;
+    }
+
+    const stop =
+      stops[stopIndex];
+
+    if (!stop) {
+      return 0;
+    }
+
+    const target =
+      project(
+        stop.lon,
+        stop.lat
+      );
+
+    const total =
+      routePath.getTotalLength();
+
+    const samples = 700;
+
+    let bestDistance =
+      Infinity;
+
+    let bestLength =
+      0;
+
+    for (
+      let i = 0;
+      i <= samples;
+      i += 1
+    ) {
+      const length =
+        total *
+        (i / samples);
+
+      const point =
+        routePath.getPointAtLength(
+          length
+        );
+
+      const dx =
+        point.x -
+        target.x;
+
+      const dy =
+        point.y -
+        target.y;
+
+      const distance =
+        dx * dx +
+        dy * dy;
+
+      if (
+        distance <
+        bestDistance
+      ) {
+        bestDistance =
+          distance;
+
+        bestLength =
+          length;
+      }
+    }
+
+    return total
+      ? bestLength / total
+      : 0;
+  }
+
+  function getStopFractions() {
+    return stops.map(
+      (_, index) =>
+        getStopFraction(
+          index
+        )
+    );
+  }
+
+  function setStopsVisible(
+    visible
+  ) {
+    if (!stopLayer) {
+      return;
+    }
+
+    stopLayer.classList.toggle(
+      "hidden",
+      !visible
+    );
+  }
+
+  function updateStopStates(
+    currentIndex,
+    visited
+  ) {
+    if (!stopLayer) {
+      return;
+    }
+
+    stopLayer
+      .querySelectorAll(
+        ".stop-dot"
+      )
+      .forEach(
+        (dot, index) => {
+          dot.classList.toggle(
+            "current",
+            index ===
+              currentIndex
+          );
+
+          dot.classList.toggle(
+            "visited",
+            visited.includes(
+              index
+            )
+          );
+        }
+      );
   }
 
   async function init() {
     try {
-      // Ruta relativa: también funciona si la web está en una subcarpeta.
-      const response = await fetch("assets/map/europe.geojson");
+      const response =
+        await fetch(
+          "assets/map/europe.geojson"
+        );
 
       if (!response.ok) {
-        throw new Error(`GeoJSON: HTTP ${response.status}`);
+        throw new Error(
+          `GeoJSON HTTP ${response.status}`
+        );
       }
 
-      const geojson = await response.json();
+      const geojson =
+        await response.json();
 
-      svg = createSvgElement("svg", {
-        viewBox: "0 0 1000 700",
-        preserveAspectRatio: "xMidYMid meet",
-        role: "img",
-        "aria-label": "Mapa del recorrido por España"
-      });
+      svg =
+        createSvgElement(
+          "svg",
+          {
+            viewBox:
+              "0 0 1000 700",
 
-      mapElement.replaceChildren(svg);
+            preserveAspectRatio:
+              "xMidYMid meet",
 
-      projection = (lon, lat) => ({
-        x: ((lon + 6.2) / 10.2) * 1000,
-        y: ((44.8 - lat) / 9.0) * 700
-      });
+            role:
+              "img",
 
-      const countries = createSvgElement("g");
-      const features = geojson.type === "FeatureCollection"
-        ? geojson.features
-        : geojson.type === "Feature"
-          ? [geojson]
-          : [{ geometry: geojson }];
+            "aria-label":
+              "Mapa del recorrido de Tolosa a Granada"
+          }
+        );
 
-      features.forEach(feature => renderGeometry(feature.geometry, countries));
-      svg.appendChild(countries);
+      mapElement.replaceChildren(
+        svg
+      );
 
-      routePath = createSvgElement("path", { class: "travel-route" });
-      progressPath = createSvgElement("path", { class: "route-progress" });
-      svg.append(routePath, progressPath);
+      projection =
+        (lon, lat) => ({
+          x:
+            ((lon + 6.2) /
+              10.2) *
+            1000,
+
+          y:
+            ((44.8 - lat) /
+              9.0) *
+            700
+        });
+
+      const countries =
+        createSvgElement(
+          "g",
+          {
+            class:
+              "countries"
+          }
+        );
+
+      const features =
+        geojson.type ===
+        "FeatureCollection"
+
+          ? geojson.features
+
+          : geojson.type ===
+            "Feature"
+
+            ? [geojson]
+
+            : [
+                {
+                  type:
+                    "Feature",
+                  geometry:
+                    geojson
+                }
+              ];
+
+      features.forEach(
+        feature =>
+          renderGeometry(
+            feature.geometry,
+            countries
+          )
+      );
+
+      svg.appendChild(
+        countries
+      );
+
+      routePath =
+        createSvgElement(
+          "path",
+          {
+            class:
+              "travel-route"
+          }
+        );
+
+      progressPath =
+        createSvgElement(
+          "path",
+          {
+            class:
+              "route-progress"
+          }
+        );
+
+      svg.append(
+        routePath,
+        progressPath
+      );
 
       renderStops();
-      drawRoute("real");
+
+      drawRoute(
+        roadRoute
+      );
+
+      setStopsVisible(
+        true
+      );
+
+      updateStopStates(
+        0,
+        [0]
+      );
 
       window.TripMap = {
-        ready: true,
         stops,
         roadRoute,
         directRoute,
+
         drawRoute,
         setProgress,
         positionAtRouteFraction,
-        getStopFraction,
-        updateStopStates,
-        projectStop(index) {
-          const stop = stops[index];
-          return stop ? project(stop.lon, stop.lat) : null;
-        }
-      };
 
-      document.dispatchEvent(new CustomEvent("trip-map-ready"));
+        getStopFraction,
+        getStopFractions,
+
+        setStopsVisible,
+        updateStopStates
+      };
     } catch (error) {
-      console.error("Error al iniciar el mapa:", error);
-      mapElement.innerHTML = `
-        <p class="map-error">
-          No se ha podido cargar el mapa.
-          Comprueba que existe assets/map/europe.geojson y que la ruta es correcta.
-        </p>
-      `;
+      console.error(
+        "Error al iniciar el mapa:",
+        error
+      );
+
+      mapElement.innerHTML =
+        `
+          <div class="map-error">
+            No se ha podido cargar el mapa.
+            Comprueba que existe
+            <code>
+              assets/map/europe.geojson
+            </code>
+            y que estás abriendo la web desde
+            GitHub Pages o un servidor local.
+          </div>
+        `;
     }
   }
 
