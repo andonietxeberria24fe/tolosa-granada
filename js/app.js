@@ -1,315 +1,660 @@
 (() => {
   "use strict";
 
+  const mapReady = () =>
+    Boolean(
+      window.TripMap
+    );
+
   const allStops = [
-    { id: "tolosa", name: "Tolosa" },
-    { id: "aizkorri", name: "Aizkorri" },
-    { id: "obanos", name: "Óbanos" },
-    { id: "oropesa", name: "Oropesa" },
-    { id: "benidorm", name: "Benidorm" },
-    { id: "granada", name: "Granada" }
+    {
+      id: "tolosa",
+      name: "Tolosa",
+      road: 0,
+      direct: 0
+    },
+    {
+      id: "aizkorri",
+      name: "Aizkorri",
+      road: 1,
+      direct: null
+    },
+    {
+      id: "obanos",
+      name: "Óbanos",
+      road: 2,
+      direct: null
+    },
+    {
+      id: "oropesa",
+      name: "Oropesa",
+      road: 3,
+      direct: null
+    },
+    {
+      id: "benidorm",
+      name: "Benidorm",
+      road: 4,
+      direct: null
+    },
+    {
+      id: "granada",
+      name: "Granada",
+      road: 5,
+      direct: 1
+    }
   ];
 
-  const directStops = [allStops[0], allStops[5]];
+  const vehicle =
+    document.getElementById(
+      "vehicle"
+    );
 
-  let currentMode = "real";
-  let activeStops = [...allStops];
-  let currentStopIndex = 0;
-  let isTravelling = false;
-  let animationFrame = null;
+  const startTripButton =
+    document.getElementById(
+      "start-trip"
+    );
 
-  const TRAVEL_DURATION = 1800;
+  const startTripLabel =
+    document.getElementById(
+      "start-trip-label"
+    );
 
-  const stopList = document.getElementById("stop-list");
-  const travelStatus = document.getElementById("travel-status");
-  const vehicle = document.getElementById("vehicle");
-  const continueButton = document.getElementById("continue-stop");
-  const memoriesButton = document.getElementById("open-memory");
-  const stopsPanel = document.getElementById("stops-panel");
-  const openStopsButton = document.getElementById("open-stops");
-  const closeStopsButton = document.getElementById("close-stops");
-  const memoryPanel = document.getElementById("memory-panel");
-  const modeButtons = document.querySelectorAll(".mode-button, .trip-option");
+  const startIcon =
+    startTripButton.querySelector(
+      ".start-icon"
+    );
 
-  function getCurrentStop() {
-    return activeStops[currentStopIndex] || activeStops[0];
+  const tripBadgeIcon =
+    document.getElementById(
+      "trip-badge-icon"
+    );
+
+  const tripBadgeText =
+    document.getElementById(
+      "trip-badge-text"
+    );
+
+  let mode = "real";
+
+  let visibleStops =
+    allStops;
+
+  let routeFractions =
+    [];
+
+  let currentStop =
+    0;
+
+  let visited =
+    [0];
+
+  let animationFrame =
+    null;
+
+  let isMoving =
+    false;
+
+  function setStartButton(
+    label,
+    icon = "🚙",
+    continuation = false,
+    visible = true
+  ) {
+    startTripButton.hidden =
+      !visible;
+
+    startTripLabel.textContent =
+      label;
+
+    startIcon.textContent =
+      icon;
+
+    startTripButton.classList.toggle(
+      "is-continuation",
+      continuation
+    );
   }
 
-  function setStatus(message) {
-    if (travelStatus) travelStatus.textContent = message;
+  function stopIndexInAllStops(
+    stop
+  ) {
+    return allStops.findIndex(
+      item =>
+        item.id ===
+        stop.id
+    );
   }
 
-  function setButtonsDisabled(disabled) {
-    if (continueButton) {
-      continueButton.disabled =
-        disabled || currentStopIndex >= activeStops.length - 1;
+  function getFractions() {
+    return routeFractions;
+  }
+
+  function setModeBadge() {
+    if (
+      mode === "direct"
+    ) {
+      tripBadgeIcon.textContent =
+        "✈️";
+
+      tripBadgeText.textContent =
+        "Directo a Granada";
+    } else {
+      tripBadgeIcon.textContent =
+        "🚙";
+
+      tripBadgeText.textContent =
+        "Ruta por carretera · 6 paradas";
+    }
+  }
+
+  function updateVehicle(
+    point
+  ) {
+    if (!point) return;
+
+    vehicle.style.left =
+      `${point.x}px`;
+
+    vehicle.style.top =
+      `${point.y}px`;
+
+    vehicle.style.setProperty(
+      "--vehicle-angle",
+      `${point.angle || 0}deg`
+    );
+  }
+
+  function updateProgress(
+    fraction
+  ) {
+    if (!mapReady()) {
+      return;
     }
 
-    if (memoriesButton) memoriesButton.disabled = disabled;
-  }
+    window.TripMap.setProgress(
+      fraction
+    );
 
-  function updateStopCounter() {
-    const counter = document.getElementById("stop-count");
-    if (counter) counter.textContent = `${currentStopIndex + 1}/${activeStops.length}`;
-  }
-
-  function renderStops() {
-    if (!stopList) return;
-
-    stopList.replaceChildren();
-
-    activeStops.forEach((stop, index) => {
-      const item = document.createElement("li");
-      item.className = "stop-item";
-
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "stop-button";
-      button.textContent = stop.name;
-      button.setAttribute("aria-current", index === currentStopIndex ? "step" : "false");
-
-      button.addEventListener("click", () => {
-        if (isTravelling || index === currentStopIndex) return;
-        currentStopIndex = index;
-        updateCurrentStop();
-        moveToCurrentStop();
-      });
-
-      item.appendChild(button);
-      stopList.appendChild(item);
-    });
-
-    updateStopCounter();
-    updateStopStates();
+    updateVehicle(
+      window.TripMap.positionAtRouteFraction(
+        fraction
+      )
+    );
   }
 
   function updateStopStates() {
-    if (!stopList) return;
-
-    stopList.querySelectorAll(".stop-item").forEach((item, index) => {
-      item.classList.toggle("stop-completed", index < currentStopIndex);
-      item.classList.toggle("stop-current", index === currentStopIndex);
-
-      const button = item.querySelector("button");
-      if (button) {
-        button.setAttribute("aria-current", index === currentStopIndex ? "step" : "false");
-      }
-    });
-
-    updateStopCounter();
-
-    if (window.TripMap && typeof window.TripMap.updateStopStates === "function") {
-      const visited = activeStops
-        .slice(0, currentStopIndex)
-        .map(stop => allStops.findIndex(item => item.id === stop.id))
-        .filter(index => index >= 0);
-
-      const currentGlobalIndex = allStops.findIndex(stop => stop.id === getCurrentStop().id);
-      window.TripMap.updateStopStates(currentGlobalIndex, visited);
-    }
-  }
-
-  function updateCurrentStop() {
-    const stop = getCurrentStop();
-    if (!stop) return;
-
-    updateStopStates();
-
-    setStatus(
-      currentStopIndex === activeStops.length - 1
-        ? `Llegada a ${stop.name}`
-        : `Parada actual: ${stop.name}`
-    );
-
-    setButtonsDisabled(isTravelling);
-  }
-
-  function updateProgress(fraction) {
-    if (!window.TripMap) return;
-
-    const safeFraction = Math.max(0, Math.min(1, fraction));
-    window.TripMap.setProgress(0, safeFraction);
-
-    const position = window.TripMap.positionAtRouteFraction(safeFraction);
-    if (vehicle && position) {
-      vehicle.style.left = `${position.x}px`;
-      vehicle.style.top = `${position.y}px`;
-    }
-  }
-
-  function moveToCurrentStop() {
-    if (!window.TripMap) return;
-
-    const stop = getCurrentStop();
-    if (!stop) return;
-
-    const fraction = window.TripMap.getStopFraction(stop.id);
-    if (Number.isFinite(fraction)) updateProgress(fraction);
-  }
-
-  function travelToStop(nextIndex) {
-    if (isTravelling || !window.TripMap) return;
-    if (nextIndex < 0 || nextIndex >= activeStops.length) return;
-
-    const fromFraction = window.TripMap.getStopFraction(activeStops[currentStopIndex].id);
-    const toFraction = window.TripMap.getStopFraction(activeStops[nextIndex].id);
-
-    if (!Number.isFinite(fromFraction) || !Number.isFinite(toFraction)) {
-      setStatus("No se ha encontrado el tramo del recorrido.");
+    if (!mapReady()) {
       return;
     }
 
-    isTravelling = true;
-    setButtonsDisabled(true);
-    setStatus(`En camino a ${activeStops[nextIndex].name}…`);
+    /*
+     * En modo directo no existe ninguna parada
+     * visualmente.
+     */
+    if (
+      mode === "direct"
+    ) {
+      window.TripMap.updateStopStates(
+        -1,
+        []
+      );
 
-    const startTime = performance.now();
+      return;
+    }
 
-    function animate(now) {
-      const progress = Math.min(1, (now - startTime) / TRAVEL_DURATION);
-      const eased = progress * progress * (3 - 2 * progress);
-      updateProgress(fromFraction + (toFraction - fromFraction) * eased);
+    const actualIndex =
+      stopIndexInAllStops(
+        visibleStops[
+          currentStop
+        ]
+      );
 
-      if (progress < 1) {
-        animationFrame = requestAnimationFrame(animate);
+    const actualVisited =
+      visited
+        .map(index =>
+          stopIndexInAllStops(
+            visibleStops[
+              index
+            ]
+          )
+        )
+        .filter(
+          index =>
+            index >= 0
+        );
+
+    window.TripMap.updateStopStates(
+      actualIndex,
+      actualVisited
+    );
+  }
+
+  function showArrival(
+    stop
+  ) {
+    const isFinal =
+      currentStop >=
+      visibleStops.length - 1;
+
+    setStartButton(
+      isFinal
+        ? "Viaje terminado"
+        : "Seguir viaje",
+
+      mode === "direct"
+        ? "✈️"
+        : "🚙",
+
+      !isFinal,
+
+      !isFinal
+    );
+
+    window.TripGallery.openArrival(
+      stop.id,
+      () => {
+        if (isFinal) {
+          window.TripGallery.close();
+
+          setStartButton(
+            "Viaje terminado",
+            "✨",
+            false,
+            false
+          );
+
+          return;
+        }
+
+        window.TripGallery.close();
+
+        travelToStop(
+          currentStop + 1
+        );
+      }
+    );
+  }
+
+  function travelToStop(
+    nextIndex
+  ) {
+    if (
+      !mapReady() ||
+      isMoving
+    ) {
+      return;
+    }
+
+    if (
+      nextIndex >=
+      visibleStops.length
+    ) {
+      return;
+    }
+
+    const fractions =
+      getFractions();
+
+    const start =
+      fractions[
+        currentStop
+      ] ?? 0;
+
+    const end =
+      fractions[
+        nextIndex
+      ] ?? 1;
+
+    if (
+      Math.abs(
+        end - start
+      ) < 0.0001
+    ) {
+      currentStop =
+        nextIndex;
+
+      visited = [
+        ...new Set([
+          ...visited,
+          currentStop
+        ])
+      ];
+
+      const stop =
+        visibleStops[
+          currentStop
+        ];
+
+      updateProgress(
+        end
+      );
+
+      showArrival(
+        stop
+      );
+
+      return;
+    }
+
+    if (
+      animationFrame
+    ) {
+      cancelAnimationFrame(
+        animationFrame
+      );
+    }
+
+    isMoving =
+      true;
+
+    setStartButton(
+      "En ruta…",
+      mode === "direct"
+        ? "✈️"
+        : "🚙",
+      false,
+      false
+    );
+
+    window.TripGallery.close();
+
+    vehicle.textContent =
+      mode === "direct"
+        ? "✈️"
+        : "🚙";
+
+    const distance =
+      Math.abs(
+        end - start
+      );
+
+    const duration =
+      Math.max(
+        2300,
+        Math.min(
+          9000,
+          distance * 15000
+        )
+      );
+
+    const startTime =
+      performance.now();
+
+    function frame(
+      now
+    ) {
+      const progress =
+        Math.min(
+          1,
+          (now -
+            startTime) /
+            duration
+        );
+
+      updateProgress(
+        start +
+          (end - start) *
+            progress
+      );
+
+      if (
+        progress < 1
+      ) {
+        animationFrame =
+          requestAnimationFrame(
+            frame
+          );
+
         return;
       }
 
-      updateProgress(toFraction);
-      currentStopIndex = nextIndex;
-      isTravelling = false;
-      animationFrame = null;
+      animationFrame =
+        null;
 
-      renderStops();
-      updateCurrentStop();
+      isMoving =
+        false;
+
+      currentStop =
+        nextIndex;
+
+      visited = [
+        ...new Set([
+          ...visited,
+          currentStop
+        ])
+      ];
+
+      updateStopStates();
+
+      updateProgress(
+        end
+      );
+
+      const stop =
+        visibleStops[
+          currentStop
+        ];
+
+      showArrival(
+        stop
+      );
     }
 
-    animationFrame = requestAnimationFrame(animate);
+    animationFrame =
+      requestAnimationFrame(
+        frame
+      );
   }
 
-  function continueTrip() {
-    if (memoryPanel) {
-      memoryPanel.classList.remove("open");
-      memoryPanel.setAttribute("aria-hidden", "true");
-    }
-
-    if (currentStopIndex < activeStops.length - 1) {
-      travelToStop(currentStopIndex + 1);
-    } else {
-      setStatus(`¡Hemos llegado a ${getCurrentStop().name}!`);
-    }
-  }
-
-  if (continueButton) {
-    continueButton.addEventListener("click", continueTrip);
-  }
-
-  if (memoriesButton) {
-    memoriesButton.addEventListener("click", () => {
-      const stop = getCurrentStop();
-
-      if (stop && window.TripGallery) {
-        window.TripGallery.openMemory(stop.id);
-      }
-    });
-  }
-
-  const continueTripButton = document.getElementById("continue-trip");
-  if (continueTripButton) {
-    continueTripButton.addEventListener("click", continueTrip);
-  }
-
-  function chooseMode(mode) {
-    if (mode !== "direct" && mode !== "real") return;
-
-    currentMode = mode;
-    activeStops = mode === "direct" ? [...directStops] : [...allStops];
-    currentStopIndex = 0;
-    isTravelling = false;
-
-    if (animationFrame !== null) {
-      cancelAnimationFrame(animationFrame);
-      animationFrame = null;
-    }
-
-    modeButtons.forEach(button => {
-      const buttonMode = button.dataset.mode || button.dataset.tripMode;
-      button.classList.toggle("active", buttonMode === mode);
-      button.classList.toggle("selected", buttonMode === mode);
-
-      if (buttonMode) {
-        button.setAttribute("aria-pressed", String(buttonMode === mode));
-      }
-    });
-
-    if (window.TripMap) {
-      window.TripMap.drawRoute(mode);
-    }
-
-    if (vehicle) {
-      vehicle.textContent = mode === "direct" ? "✈️" : "🚙";
-      vehicle.style.display = "";
-    }
-
-    renderStops();
-    updateCurrentStop();
-    moveToCurrentStop();
-  }
-
-  modeButtons.forEach(button => {
-    button.addEventListener("click", () => {
-      const mode = button.dataset.mode || button.dataset.tripMode;
-      if (mode) chooseMode(mode);
-    });
-  });
-
-  function openStopsPanel() {
-    if (!stopsPanel) return;
-    stopsPanel.classList.add("open");
-    stopsPanel.setAttribute("aria-hidden", "false");
-    if (openStopsButton) openStopsButton.setAttribute("aria-expanded", "true");
-  }
-
-  function closeStopsPanel() {
-    if (!stopsPanel) return;
-    stopsPanel.classList.remove("open");
-    stopsPanel.setAttribute("aria-hidden", "true");
-    if (openStopsButton) openStopsButton.setAttribute("aria-expanded", "false");
-  }
-
-  if (openStopsButton) openStopsButton.addEventListener("click", openStopsPanel);
-  if (closeStopsButton) closeStopsButton.addEventListener("click", closeStopsPanel);
-
-  function initialize() {
-    renderStops();
-    chooseMode("real");
-  }
-
-  let attempts = 0;
-
-  function waitForMap() {
-    if (window.TripMap && window.TripMap.ready) {
-      initialize();
+  function chooseMode(
+    nextMode,
+    fromUser = false
+  ) {
+    if (!mapReady()) {
       return;
     }
 
-    attempts++;
-
-    if (attempts < 100) {
-      window.setTimeout(waitForMap, 100);
-    } else {
-      renderStops();
-      updateCurrentStop();
-      setStatus("No se ha podido cargar el mapa.");
+    if (
+      animationFrame
+    ) {
+      cancelAnimationFrame(
+        animationFrame
+      );
     }
+
+    animationFrame =
+      null;
+
+    isMoving =
+      false;
+
+    mode =
+      nextMode;
+
+    currentStop =
+      0;
+
+    visited =
+      [0];
+
+    window.TripGallery.close();
+
+    document
+      .querySelectorAll(
+        ".mode-button"
+      )
+      .forEach(
+        button => {
+          button.classList.toggle(
+            "active",
+            button.dataset.mode ===
+              mode
+          );
+        }
+      );
+
+    if (
+      mode === "direct"
+    ) {
+      visibleStops = [
+        allStops[0],
+        allStops[5]
+      ];
+
+      vehicle.textContent =
+        "✈️";
+
+      window.TripMap.drawRoute(
+        window.TripMap
+          .directRoute
+      );
+
+      /*
+       * Esto elimina los puntos
+       * de las paradas.
+       */
+      window.TripMap.setStopsVisible(
+        false
+      );
+
+      routeFractions =
+        [0, 1];
+
+      updateProgress(
+        0
+      );
+
+      setStartButton(
+        "Empezar vuelo",
+        "✈️",
+        false,
+        true
+      );
+    } else {
+      visibleStops =
+        allStops;
+
+      vehicle.textContent =
+        "🚙";
+
+      window.TripMap.drawRoute(
+        window.TripMap
+          .roadRoute
+      );
+
+      window.TripMap.setStopsVisible(
+        true
+      );
+
+      routeFractions =
+        window.TripMap.getStopFractions();
+
+      updateProgress(
+        routeFractions[0] ||
+          0
+      );
+
+      setStartButton(
+        "Comenzar el viaje",
+        "🚙",
+        false,
+        true
+      );
+    }
+
+    setModeBadge();
+
+    updateStopStates();
   }
 
-  waitForMap();
+  function startNextLeg() {
+    if (isMoving) {
+      return;
+    }
 
-  window.TripApp = {
-    chooseMode,
-    travelToStop,
-    getCurrentStop,
-    getCurrentStopIndex: () => currentStopIndex
-  };
+    if (
+      currentStop >=
+      visibleStops.length - 1
+    ) {
+      setStartButton(
+        "Viaje terminado",
+        "✨",
+        false,
+        false
+      );
+
+      return;
+    }
+
+    travelToStop(
+      currentStop + 1
+    );
+  }
+
+  startTripButton.addEventListener(
+    "click",
+    startNextLeg
+  );
+
+  document
+    .querySelectorAll(
+      ".mode-button"
+    )
+    .forEach(
+      button => {
+        button.addEventListener(
+          "click",
+          () =>
+            chooseMode(
+              button.dataset.mode,
+              true
+            )
+        );
+      }
+    );
+
+  window.addEventListener(
+    "resize",
+    () => {
+      if (
+        !mapReady() ||
+        isMoving
+      ) {
+        return;
+      }
+
+      if (
+        mode === "real"
+      ) {
+        routeFractions =
+          window.TripMap.getStopFractions();
+      }
+
+      updateProgress(
+        routeFractions[
+          currentStop
+        ] ?? 0
+      );
+    }
+  );
+
+  const waitForMap =
+    setInterval(
+      () => {
+        if (!mapReady()) {
+          return;
+        }
+
+        clearInterval(
+          waitForMap
+        );
+
+        chooseMode(
+          "real",
+          false
+        );
+      },
+      100
+    );
 })();
