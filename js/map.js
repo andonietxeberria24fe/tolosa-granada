@@ -41,11 +41,13 @@
   ];
 
   /*
-   * Oropesa → Benidorm se lleva deliberadamente hacia el interior.
-   * De esta forma el recorrido baja bastante hacia la izquierda
-   * antes de volver hacia Benidorm.
+   * Oropesa → Benidorm:
+   *
+   * Ahora seguimos bastante más la costa.
+   * La ruta se mantiene ligeramente hacia tierra
+   * para evitar que visualmente parezca que va por el mar,
+   * pero sin volver a meterse exageradamente hacia el interior.
    */
-
   const roadRoute = [
     [-2.078, 43.135],
     [-2.16, 43.05],
@@ -61,13 +63,17 @@
     [0.10, 40.75],
     [0.135, 40.092],
 
-    /* Oropesa → interior → Benidorm */
-    [-0.22, 39.88],
-    [-0.58, 39.62],
-    [-0.98, 39.28],
-    [-1.08, 38.98],
-    [-0.84, 38.72],
-    [-0.48, 38.60],
+    /*
+     * Oropesa → Benidorm
+     * siguiendo aproximadamente la costa.
+     */
+    [-0.02, 39.94],
+    [-0.17, 39.76],
+    [-0.32, 39.53],
+    [-0.46, 39.28],
+    [-0.53, 39.02],
+    [-0.45, 38.79],
+    [-0.28, 38.62],
 
     [-0.122, 38.541],
 
@@ -78,31 +84,45 @@
     [-3.598, 37.177]
   ];
 
+  /*
+   * Modo directo:
+   *
+   * Esta opción es deliberadamente una parodia.
+   * No hay paradas intermedias.
+   * Es simplemente Tolosa → Granada.
+   */
   const directRoute = [
     [-2.078, 43.135],
-    [-1.70, 42.20],
-    [-1.20, 41.20],
-    [-0.70, 40.20],
-    [-0.30, 39.20],
-    [-0.80, 38.50],
-    [-1.80, 37.80],
     [-3.598, 37.177]
   ];
 
   const mapElement =
-    document.getElementById("map");
+    document.getElementById(
+      "map"
+    );
 
   let svg = null;
   let routePath = null;
   let progressPath = null;
   let projection = null;
   let stopLayer = null;
-  let activeRoute = roadRoute;
 
-  function project(lon, lat) {
+  let activeRoute =
+    roadRoute;
+
+  function project(
+    lon,
+    lat
+  ) {
     return projection
-      ? projection(lon, lat)
-      : { x: 0, y: 0 };
+      ? projection(
+          lon,
+          lat
+        )
+      : {
+          x: 0,
+          y: 0
+        };
   }
 
   function createSvgElement(
@@ -115,7 +135,9 @@
         name
       );
 
-    Object.entries(attrs).forEach(
+    Object.entries(
+      attrs
+    ).forEach(
       ([key, value]) => {
         node.setAttribute(
           key,
@@ -127,53 +149,80 @@
     return node;
   }
 
-  function pathFromCoordinates(coords) {
+  function pathFromCoordinates(
+    coords
+  ) {
     return coords
-      .map((point, index) => {
-        const p = project(
-          point[0],
-          point[1]
-        );
+      .map(
+        (
+          point,
+          index
+        ) => {
+          const p =
+            project(
+              point[0],
+              point[1]
+            );
 
-        return `${
-          index === 0
-            ? "M"
-            : "L"
-        }${p.x.toFixed(2)},${p.y.toFixed(2)}`;
-      })
+          return `${
+            index === 0
+              ? "M"
+              : "L"
+          }${p.x.toFixed(
+            2
+          )},${p.y.toFixed(
+            2
+          )}`;
+        }
+      )
       .join(" ");
   }
 
   /*
-   * Convierte los puntos del recorrido en una curva suave.
-   * Así el recorrido se ve mucho más natural que una sucesión
-   * de líneas rectas.
+   * Para el viaje real hacemos una curva suave.
+   *
+   * Si solo hay dos puntos, como en el avión,
+   * dejamos una línea completamente directa.
    */
   function smoothPathFromCoordinates(
     coords
   ) {
-    if (coords.length < 2) {
+    if (
+      coords.length <
+      2
+    ) {
       return "";
     }
 
-    if (coords.length === 2) {
+    if (
+      coords.length ===
+      2
+    ) {
       return pathFromCoordinates(
         coords
       );
     }
 
-    const points = coords.map(
-      ([lon, lat]) =>
-        project(lon, lat)
-    );
+    const points =
+      coords.map(
+        ([lon, lat]) =>
+          project(
+            lon,
+            lat
+          )
+      );
 
     let d =
-      `M ${points[0].x.toFixed(2)} ` +
-      `${points[0].y.toFixed(2)}`;
+      `M ${points[0].x.toFixed(
+        2
+      )} ${points[0].y.toFixed(
+        2
+      )}`;
 
     for (
       let i = 0;
-      i < points.length - 1;
+      i <
+      points.length - 1;
       i += 1
     ) {
       const p0 =
@@ -211,12 +260,21 @@
           6;
 
       d +=
-        ` C ${cp1x.toFixed(2)} ` +
-        `${cp1y.toFixed(2)}, ` +
-        `${cp2x.toFixed(2)} ` +
-        `${cp2y.toFixed(2)}, ` +
-        `${p2.x.toFixed(2)} ` +
-        `${p2.y.toFixed(2)}`;
+        ` C ${cp1x.toFixed(
+          2
+        )} ${cp1y.toFixed(
+          2
+        )}, ` +
+        `${cp2x.toFixed(
+          2
+        )} ${cp2y.toFixed(
+          2
+        )}, ` +
+        `${p2.x.toFixed(
+          2
+        )} ${p2.y.toFixed(
+          2
+        )}`;
     }
 
     return d;
@@ -226,7 +284,9 @@
     geometry,
     group
   ) {
-    if (!geometry) return;
+    if (!geometry) {
+      return;
+    }
 
     const type =
       geometry.type;
@@ -234,35 +294,44 @@
     const coords =
       geometry.coordinates;
 
-    if (type === "Polygon") {
-      coords.forEach(ring => {
-        group.appendChild(
-          createSvgElement(
-            "path",
-            {
-              d:
-                pathFromCoordinates(
-                  ring
-                ),
-              class: "country"
-            }
-          )
-        );
-      });
-    } else if (
-      type === "MultiPolygon"
+    if (
+      type ===
+      "Polygon"
     ) {
-      coords.forEach(poly => {
-        renderGeometry(
-          {
-            type:
-              "Polygon",
-            coordinates:
-              poly
-          },
-          group
-        );
-      });
+      coords.forEach(
+        ring => {
+          group.appendChild(
+            createSvgElement(
+              "path",
+              {
+                d:
+                  pathFromCoordinates(
+                    ring
+                  ),
+                class:
+                  "country"
+              }
+            )
+          );
+        }
+      );
+    } else if (
+      type ===
+      "MultiPolygon"
+    ) {
+      coords.forEach(
+        poly => {
+          renderGeometry(
+            {
+              type:
+                "Polygon",
+              coordinates:
+                poly
+            },
+            group
+          );
+        }
+      );
     } else if (
       type ===
       "GeometryCollection"
@@ -282,16 +351,21 @@
       createSvgElement(
         "g",
         {
-          class: "stop-layer"
+          class:
+            "stop-layer"
         }
       );
 
     stops.forEach(
-      (stop, index) => {
-        const p = project(
-          stop.lon,
-          stop.lat
-        );
+      (
+        stop,
+        index
+      ) => {
+        const p =
+          project(
+            stop.lon,
+            stop.lat
+          );
 
         const circle =
           createSvgElement(
@@ -318,8 +392,11 @@
     );
   }
 
-  function drawRoute(route) {
-    activeRoute = route;
+  function drawRoute(
+    route
+  ) {
+    activeRoute =
+      route;
 
     const d =
       smoothPathFromCoordinates(
@@ -356,14 +433,19 @@
   function setProgress(
     fraction
   ) {
-    if (!progressPath) {
+    if (
+      !progressPath
+    ) {
       return;
     }
 
     const safe =
       Math.max(
         0,
-        Math.min(1, fraction)
+        Math.min(
+          1,
+          fraction
+        )
       );
 
     progressPath.style.strokeDasharray =
@@ -412,7 +494,9 @@
     fraction,
     lookAhead = 0.006
   ) {
-    if (!routePath) {
+    if (
+      !routePath
+    ) {
       return {
         x: 0,
         y: 0,
@@ -426,47 +510,95 @@
     const safeFraction =
       Math.max(
         0,
-        Math.min(1, fraction)
+        Math.min(
+          1,
+          fraction
+        )
       );
 
     const distance =
-      safeFraction * length;
+      safeFraction *
+      length;
 
     const p =
       routePath.getPointAtLength(
         distance
       );
 
-    const aheadDistance =
-      Math.min(
-        length,
-        distance +
-          Math.max(
-            4,
-            length *
-              lookAhead
-          )
+    /*
+     * Para calcular la orientación:
+     *
+     * - si no estamos al final, miramos hacia delante;
+     * - si estamos al final, miramos hacia atrás.
+     *
+     * Así el vehículo conserva la dirección correcta
+     * incluso al llegar a una parada.
+     */
+    const step =
+      Math.max(
+        4,
+        length *
+          lookAhead
       );
 
-    const ahead =
-      routePath.getPointAtLength(
-        aheadDistance
-      );
+    let directionStart;
+    let directionEnd;
+
+    if (
+      distance >=
+      length - 1
+    ) {
+      directionStart =
+        routePath.getPointAtLength(
+          Math.max(
+            0,
+            distance - step
+          )
+        );
+
+      directionEnd =
+        p;
+    } else {
+      directionStart =
+        p;
+
+      directionEnd =
+        routePath.getPointAtLength(
+          Math.min(
+            length,
+            distance +
+              step
+          )
+        );
+    }
 
     const current =
-      svgPointToContainer(p);
+      svgPointToContainer(
+        p
+      );
 
     const next =
       svgPointToContainer(
-        ahead
+        directionEnd
       );
+
+    const previous =
+      svgPointToContainer(
+        directionStart
+      );
+
+    const dx =
+      next.x -
+      previous.x;
+
+    const dy =
+      next.y -
+      previous.y;
 
     const angle =
       Math.atan2(
-        next.y -
-          current.y,
-        next.x -
-          current.x
+        dy,
+        dx
       ) *
       180 /
       Math.PI;
@@ -487,18 +619,25 @@
   }
 
   /*
-   * Busca dónde está cada parada sobre la ruta real.
-   * Esto evita tener que mantener porcentajes a mano.
+   * Busca la posición real de cada parada
+   * sobre la línea dibujada.
+   *
+   * Esto hace que los porcentajes no dependan
+   * de números puestos manualmente.
    */
   function getStopFraction(
     stopIndex
   ) {
-    if (!routePath) {
+    if (
+      !routePath
+    ) {
       return 0;
     }
 
     const stop =
-      stops[stopIndex];
+      stops[
+        stopIndex
+      ];
 
     if (!stop) {
       return 0;
@@ -513,7 +652,8 @@
     const total =
       routePath.getTotalLength();
 
-    const samples = 700;
+    const samples =
+      700;
 
     let bestDistance =
       Infinity;
@@ -528,7 +668,8 @@
     ) {
       const length =
         total *
-        (i / samples);
+        (i /
+          samples);
 
       const point =
         routePath.getPointAtLength(
@@ -560,13 +701,17 @@
     }
 
     return total
-      ? bestLength / total
+      ? bestLength /
+          total
       : 0;
   }
 
   function getStopFractions() {
     return stops.map(
-      (_, index) =>
+      (
+        _,
+        index
+      ) =>
         getStopFraction(
           index
         )
@@ -576,7 +721,9 @@
   function setStopsVisible(
     visible
   ) {
-    if (!stopLayer) {
+    if (
+      !stopLayer
+    ) {
       return;
     }
 
@@ -590,7 +737,9 @@
     currentIndex,
     visited
   ) {
-    if (!stopLayer) {
+    if (
+      !stopLayer
+    ) {
       return;
     }
 
@@ -599,7 +748,10 @@
         ".stop-dot"
       )
       .forEach(
-        (dot, index) => {
+        (
+          dot,
+          index
+        ) => {
           dot.classList.toggle(
             "current",
             index ===
@@ -623,7 +775,9 @@
           "assets/map/europe.geojson"
         );
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
         throw new Error(
           `GeoJSON HTTP ${response.status}`
         );
@@ -655,7 +809,10 @@
       );
 
       projection =
-        (lon, lat) => ({
+        (
+          lon,
+          lat
+        ) => ({
           x:
             ((lon + 6.2) /
               10.2) *
@@ -685,7 +842,9 @@
           : geojson.type ===
             "Feature"
 
-            ? [geojson]
+            ? [
+                geojson
+              ]
 
             : [
                 {
@@ -761,7 +920,9 @@
         setStopsVisible,
         updateStopStates
       };
-    } catch (error) {
+    } catch (
+      error
+    ) {
       console.error(
         "Error al iniciar el mapa:",
         error
