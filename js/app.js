@@ -2,9 +2,7 @@
   "use strict";
 
   const mapReady = () =>
-    Boolean(
-      window.TripMap
-    );
+    Boolean(window.TripMap);
 
   const allStops = [
     {
@@ -159,9 +157,24 @@
     vehicle.style.top =
       `${point.y}px`;
 
+    /*
+     * El emoji 🚙 está orientado al contrario
+     * de la dirección matemática de la tangente.
+     * Sumamos 180º para que el frontal del coche
+     * mire realmente hacia donde avanza.
+     */
+    const vehicleAngleOffset =
+      mode === "real"
+        ? 180
+        : 0;
+
+    const angle =
+      (point.angle || 0) +
+      vehicleAngleOffset;
+
     vehicle.style.setProperty(
       "--vehicle-angle",
-      `${point.angle || 0}deg`
+      `${angle}deg`
     );
   }
 
@@ -189,8 +202,8 @@
     }
 
     /*
-     * En modo directo no existe ninguna parada
-     * visualmente.
+     * En el modo directo los puntos están
+     * completamente ocultos.
      */
     if (
       mode === "direct"
@@ -369,14 +382,23 @@
         end - start
       );
 
+    /*
+     * El vuelo directo es deliberadamente corto:
+     * es la alternativa rápida/parodia.
+     *
+     * El viaje real mantiene una duración mayor
+     * para que cada desplazamiento tenga presencia.
+     */
     const duration =
-      Math.max(
-        2300,
-        Math.min(
-          9000,
-          distance * 15000
-        )
-      );
+      mode === "direct"
+        ? 1800
+        : Math.max(
+            2200,
+            Math.min(
+              8200,
+              distance * 14500
+            )
+          );
 
     const startTime =
       performance.now();
@@ -448,8 +470,7 @@
   }
 
   function chooseMode(
-    nextMode,
-    fromUser = false
+    nextMode
   ) {
     if (!mapReady()) {
       return;
@@ -511,8 +532,8 @@
       );
 
       /*
-       * Esto elimina los puntos
-       * de las paradas.
+       * Se ocultan por completo todos los
+       * puntos de las paradas.
        */
       window.TripMap.setStopsVisible(
         false
@@ -587,6 +608,40 @@
       return;
     }
 
+    /*
+     * IMPORTANTE:
+     *
+     * Tolosa también es ahora una parada.
+     *
+     * Al pulsar "Comenzar el viaje"
+     * no salimos inmediatamente:
+     * primero abrimos la ventana de Tolosa.
+     *
+     * Cuando se pulsa "Seguimos",
+     * comienza el recorrido hacia Aizkorri.
+     */
+    if (
+      mode === "real" &&
+      currentStop === 0
+    ) {
+      window.TripGallery.openArrival(
+        visibleStops[0].id,
+        () => {
+          window.TripGallery.close();
+
+          travelToStop(
+            1
+          );
+        }
+      );
+
+      return;
+    }
+
+    /*
+     * En el modo avión no hacemos esa parada
+     * intermedia: el vuelo sale directamente.
+     */
     travelToStop(
       currentStop + 1
     );
@@ -607,8 +662,7 @@
           "click",
           () =>
             chooseMode(
-              button.dataset.mode,
-              true
+              button.dataset.mode
             )
         );
       }
@@ -651,8 +705,7 @@
         );
 
         chooseMode(
-          "real",
-          false
+          "real"
         );
       },
       100
