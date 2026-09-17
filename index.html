@@ -1,53 +1,38 @@
+
 <!doctype html>
 <html lang="es">
-
 <head>
   <meta charset="utf-8">
-
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   >
-
-  <meta
-    name="theme-color"
-    content="#f7f8fa"
-  >
+  <meta name="theme-color" content="#f7f8fa">
 
   <title>El viaje</title>
 
-  <link
-    rel="stylesheet"
-    href="css/style.css"
-  >
+  <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-
   <main id="app">
 
     <header class="header">
-      <div class="eyebrow">
-        UN VIAJE PARA RECORDAR
-      </div>
+      <div class="eyebrow">UN VIAJE PARA RECORDAR</div>
 
       <h1>
         El viaje
-        <span>✦</span>
+        <span aria-hidden="true">✦</span>
       </h1>
     </header>
 
-
-    <!-- CAMBIO DE VIAJE -->
-    <nav
-      class="mode-switch"
-      aria-label="Modo de viaje"
-    >
-
+    <!-- Selector de modo -->
+    <nav class="mode-switch" aria-label="Modo de viaje">
       <button
         class="mode-button active"
         data-mode="real"
         type="button"
+        aria-pressed="true"
       >
         El viaje de verdad
       </button>
@@ -56,161 +41,112 @@
         class="mode-button"
         data-mode="direct"
         type="button"
+        aria-pressed="false"
       >
         Tolosa → Granada
       </button>
-
     </nav>
 
-
-    <!-- MAPA -->
+    <!-- Mapa y vehículo -->
     <div id="map-container">
+      <div id="map" aria-label="Mapa del recorrido"></div>
 
-      <div
-        id="map"
-        aria-label="Mapa del recorrido"
-      ></div>
-
-      <!-- VEHÍCULO -->
-      <div
-        id="vehicle"
-        aria-hidden="true"
-      >
-        🚙
-      </div>
-
+      <div id="vehicle" aria-hidden="true">🚙</div>
     </div>
 
-
-    <!-- BOTÓN PARADAS EN MÓVIL -->
+    <!-- Botón para abrir las paradas en móvil -->
     <button
       id="open-stops"
       class="mobile-stops-button"
-      aria-expanded="false"
       type="button"
+      aria-controls="stops-panel"
+      aria-expanded="false"
     >
-      <span>☷</span>
+      <span aria-hidden="true">☷</span>
       Paradas
       <span id="stop-count"></span>
     </button>
 
-
-    <!-- PANEL PARADAS -->
+    <!-- Panel de paradas -->
     <aside
       id="stops-panel"
       class="stops-panel"
       aria-label="Paradas del viaje"
+      aria-hidden="false"
     >
-
-      <div class="sheet-grabber"></div>
+      <div class="sheet-grabber" aria-hidden="true"></div>
 
       <div class="panel-heading">
-
         <div>
-
-          <div class="eyebrow">
-            EL RECORRIDO
-          </div>
-
-          <h2>
-            Paradas
-          </h2>
-
+          <div class="eyebrow">EL RECORRIDO</div>
+          <h2>Paradas</h2>
         </div>
 
         <button
           id="close-stops"
           class="icon-button"
-          aria-label="Cerrar paradas"
           type="button"
+          aria-label="Cerrar paradas"
         >
           ×
         </button>
-
       </div>
 
-      <ol
-        id="stop-list"
-        class="stop-list"
-      ></ol>
+      <ol id="stop-list" class="stop-list"></ol>
 
-      <p
-        id="travel-status"
-        class="travel-status"
-      >
+      <p id="travel-status" class="travel-status" aria-live="polite">
         Preparados para salir
       </p>
-
     </aside>
+
+    <!-- Acciones principales -->
     <div id="stop-actions" class="stop-actions">
-  <button id="continue-stop" class="primary-button" type="button">
-    Seguimos <span>→</span>
-  </button>
+      <button id="continue-stop" class="primary-button" type="button">
+        Seguimos <span aria-hidden="true">→</span>
+      </button>
 
-  <button id="open-memory" class="secondary-button" type="button">
-    Recuerdos
-  </button>
-</div>
+      <button id="open-memory" class="secondary-button" type="button">
+        Recuerdos
+      </button>
+    </div>
 
-
-    <!-- PANEL RECUERDO -->
+    <!-- Panel de recuerdos -->
     <section
       id="memory-panel"
       class="memory-panel"
+      aria-label="Recuerdo de la parada"
       aria-hidden="true"
     >
-
-      <div class="sheet-grabber"></div>
+      <div class="sheet-grabber" aria-hidden="true"></div>
 
       <div class="memory-top">
-
-        <span class="eyebrow">
-          UN RECUERDO DEL VIAJE
-        </span>
+        <span class="eyebrow">UN RECUERDO DEL VIAJE</span>
 
         <button
           id="close-memory"
           class="icon-button"
-          aria-label="Cerrar recuerdo"
           type="button"
+          aria-label="Cerrar recuerdo"
         >
           ×
         </button>
-
       </div>
 
-      <div
-        id="memory-content"
-        class="memory-content"
-      ></div>
+      <div id="memory-content" class="memory-content"></div>
 
       <div class="memory-actions">
-
-        <button
-          id="continue-trip"
-          class="primary-button"
-          type="button"
-        >
-          <span>
-            Seguimos
-          </span>
-
-          <span>
-            →
-          </span>
+        <button id="continue-trip" class="primary-button" type="button">
+          <span>Seguimos</span>
+          <span aria-hidden="true">→</span>
         </button>
-
       </div>
-
     </section>
 
   </main>
 
-
+  <!-- Cargar en este orden: mapa, recuerdos y aplicación -->
   <script src="js/map.js"></script>
   <script src="js/gallery.js"></script>
   <script src="js/app.js"></script>
-
 </body>
-
 </html>
