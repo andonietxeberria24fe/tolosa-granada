@@ -11,6 +11,7 @@
 
   --coral: #ff6b5f;
   --coral-dark: #f05449;
+
   --sun: #ffc857;
   --sky: #67c7ff;
   --mint: #5ed3aa;
@@ -18,13 +19,22 @@
 
   --route: #a8b6c7;
 
-  --shadow: 0 24px 70px rgba(79, 54, 45, 0.16);
-  --soft-shadow: 0 10px 30px rgba(79, 54, 45, 0.12);
+  --shadow:
+    0 24px 70px rgba(79, 54, 45, 0.16);
+
+  --soft-shadow:
+    0 10px 30px rgba(79, 54, 45, 0.12);
 }
+
+
+/* ==========================================
+   RESET
+========================================== */
 
 * {
   box-sizing: border-box;
 }
+
 
 html,
 body {
@@ -33,8 +43,10 @@ body {
   margin: 0;
 }
 
+
 body {
   overflow: hidden;
+
   background: var(--bg);
   color: var(--ink);
 
@@ -48,39 +60,58 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+
 button {
   font: inherit;
   cursor: pointer;
+
   -webkit-tap-highlight-color: transparent;
 }
 
+
 button:focus-visible {
-  outline: 3px solid rgba(103, 199, 255, 0.72);
+  outline:
+    3px solid
+    rgba(103, 199, 255, 0.72);
+
   outline-offset: 3px;
 }
+
 
 [hidden] {
   display: none !important;
 }
 
+
+/* ==========================================
+   APP
+========================================== */
+
 #app {
   position: relative;
+
   width: 100%;
   height: 100%;
+
   min-height: 520px;
+
   isolation: isolate;
 }
 
-/* =========================================================
+
+/* ==========================================
    MAPA
-========================================================= */
+========================================== */
 
 #map-container,
 #map {
   position: absolute;
+
   inset: 0;
+
   overflow: hidden;
 }
+
 
 #map-container {
   background:
@@ -89,16 +120,19 @@ button:focus-visible {
       rgba(255, 200, 87, 0.18),
       transparent 24%
     ),
+
     radial-gradient(
       circle at 84% 24%,
       rgba(103, 199, 255, 0.16),
       transparent 25%
     ),
+
     radial-gradient(
       circle at 74% 88%,
       rgba(155, 140, 255, 0.14),
       transparent 27%
     ),
+
     linear-gradient(
       135deg,
       #fffaf6 0%,
@@ -107,14 +141,17 @@ button:focus-visible {
     );
 }
 
+
 #map {
   background: transparent;
 }
+
 
 #map::after {
   content: "";
 
   position: absolute;
+
   inset: 0;
 
   pointer-events: none;
@@ -122,27 +159,32 @@ button:focus-visible {
   background:
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.12),
-      rgba(255, 255, 255, 0) 28%,
-      rgba(255, 255, 255, 0.1)
+      rgba(255,255,255,.12),
+      rgba(255,255,255,0) 28%,
+      rgba(255,255,255,.1)
     );
 }
 
+
 #map svg {
   position: relative;
+
   z-index: 1;
 
   display: block;
+
   width: 100%;
   height: 100%;
 }
 
-/* =========================================================
+
+/* ==========================================
    CABECERA
-========================================================= */
+========================================== */
 
 .header {
   position: absolute;
+
   z-index: 8;
 
   top: 24px;
@@ -153,31 +195,46 @@ button:focus-visible {
   pointer-events: none;
 }
 
+
 .eyebrow {
   color: var(--muted);
 
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.16em;
+
+  letter-spacing: .16em;
   line-height: 1.2;
 
   text-transform: uppercase;
 }
 
+
 .header h1 {
   margin: 6px 0 0;
 
-  font-size: clamp(29px, 3.4vw, 42px);
-  line-height: 0.95;
-  letter-spacing: -0.065em;
+  font-size:
+    clamp(
+      29px,
+      3.4vw,
+      42px
+    );
+
+  line-height: .95;
+
+  letter-spacing: -.065em;
+
   font-weight: 820;
 }
 
+
 .header h1 span {
   color: var(--coral);
-  font-size: 0.65em;
+
+  font-size: .65em;
+
   vertical-align: 10%;
 }
+
 
 .header p {
   margin: 11px 0 0;
@@ -187,36 +244,49 @@ button:focus-visible {
   color: #727d8c;
 
   font-size: 12px;
+
   line-height: 1.45;
 }
 
-/* =========================================================
-   SELECTOR DE MODO
-========================================================= */
+
+/* ==========================================
+   MODO
+========================================== */
 
 .mode-switch {
   position: absolute;
+
   z-index: 9;
 
   top: 24px;
   left: 50%;
 
-  transform: translateX(-50%);
+  transform:
+    translateX(-50%);
 
   display: flex;
+
   gap: 4px;
 
   padding: 5px;
 
-  border: 1px solid rgba(63, 77, 98, 0.08);
+  border:
+    1px solid
+    rgba(63, 77, 98, .08);
+
   border-radius: 999px;
 
-  background: rgba(255, 255, 255, 0.78);
+  background:
+    rgba(255,255,255,.78);
 
-  box-shadow: var(--soft-shadow);
+  box-shadow:
+    var(--soft-shadow);
 
-  backdrop-filter: blur(22px) saturate(135%);
+  backdrop-filter:
+    blur(22px)
+    saturate(135%);
 }
+
 
 .mode-button {
   min-height: 40px;
@@ -224,6 +294,7 @@ button:focus-visible {
   padding: 9px 15px;
 
   border: 0;
+
   border-radius: 999px;
 
   background: transparent;
@@ -236,80 +307,100 @@ button:focus-visible {
   white-space: nowrap;
 
   transition:
-    transform 0.2s ease,
-    background 0.25s ease,
-    color 0.25s ease,
-    box-shadow 0.25s ease;
+    transform .2s ease,
+    background .25s ease,
+    color .25s ease,
+    box-shadow .25s ease;
 }
+
 
 .mode-button span {
   margin-right: 4px;
 }
 
+
 .mode-button:hover {
-  transform: translateY(-1px);
+  transform:
+    translateY(-1px);
 }
 
+
 .mode-button.active {
-  background: linear-gradient(
-    135deg,
-    #ff786b,
-    #ff6059
-  );
+  background:
+    linear-gradient(
+      135deg,
+      #ff786b,
+      #ff6059
+    );
 
   color: #fff;
 
   box-shadow:
-    0 8px 18px rgba(255, 102, 91, 0.22);
+    0 8px 18px
+    rgba(255, 102, 91, .22);
 }
 
-/* =========================================================
+
+/* ==========================================
    PAÍSES
-========================================================= */
+========================================== */
 
 .country {
   fill: #fffdfb;
+
   stroke: #e9d7d0;
-  stroke-width: 0.68;
+
+  stroke-width: .68;
 }
+
 
 .country:nth-child(3n + 1) {
   fill: #fff8ef;
 }
 
+
 .country:nth-child(3n + 2) {
   fill: #f6fbff;
 }
+
 
 .country:nth-child(3n) {
   fill: #fbf6ff;
 }
 
-/* =========================================================
-   RUTAS
-========================================================= */
+
+/* ==========================================
+   RUTA
+========================================== */
 
 .travel-route {
   fill: none;
 
   stroke: var(--route);
+
   stroke-width: 4.5;
 
   stroke-linecap: round;
   stroke-linejoin: round;
 
-  opacity: 0.75;
+  opacity: .75;
 
   filter:
     drop-shadow(
-      0 2px 3px rgba(93, 109, 131, 0.12)
+      0 2px 3px
+      rgba(93, 109, 131, .12)
     );
 }
+
 
 .route-progress {
   fill: none;
 
+  stroke:
+    url("#routeGradient");
+
   stroke: var(--coral);
+
   stroke-width: 5.5;
 
   stroke-linecap: round;
@@ -317,79 +408,111 @@ button:focus-visible {
 
   filter:
     drop-shadow(
-      0 3px 5px rgba(255, 107, 95, 0.2)
+      0 3px 5px
+      rgba(255, 107, 95, .2)
     );
 }
 
-/* =========================================================
+
+/* ==========================================
    PUNTOS
-========================================================= */
+========================================== */
 
 .stop-dot {
   fill: #fff;
 
   stroke: #a6b5c5;
+
   stroke-width: 3;
 
   filter:
     drop-shadow(
-      0 2px 4px rgba(71, 86, 108, 0.16)
+      0 2px 4px
+      rgba(71, 86, 108, .16)
     );
 
   transition:
-    r 0.25s ease,
-    fill 0.25s ease,
-    stroke 0.25s ease;
+    r .25s ease,
+    fill .25s ease,
+    stroke .25s ease;
 }
+
 
 .stop-dot.visited {
   fill: var(--mint);
+
   stroke: #ffffff;
 }
 
+
 .stop-dot.current {
   fill: #fff;
+
   stroke: var(--coral);
+
   stroke-width: 4.5;
 }
+
 
 .stop-dot.hidden {
   display: none;
 }
 
-/* =========================================================
-   VEHÍCULO
-========================================================= */
+
+/* ==========================================
+   COCHE / AVIÓN
+========================================== */
 
 #vehicle {
   position: absolute;
+
   z-index: 7;
 
   left: 0;
   top: 0;
 
   display: grid;
+
   place-items: center;
 
   width: 46px;
   height: 46px;
 
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  border:
+    1px solid
+    rgba(255,255,255,.95);
+
   border-radius: 50%;
 
-  background: rgba(255, 255, 255, 0.9);
+  background:
+    rgba(255,255,255,.9);
 
   box-shadow:
-    0 10px 24px rgba(67, 78, 96, 0.18);
+    0 10px 24px
+    rgba(67, 78, 96, .18);
 
   font-size: 26px;
+
   line-height: 1;
 
+  /*
+   * IMPORTANTE:
+   *
+   * Ya NO rotamos el vehículo.
+   *
+   * Solo lo reflejamos horizontalmente
+   * mediante scaleX().
+   *
+   * De esta forma nunca se vuelca.
+   */
   transform:
     translate(-50%, -50%)
-    rotate(var(--vehicle-angle, 0deg));
+    scaleX(
+      var(--vehicle-scale-x, 1)
+    );
 
-  transform-origin: 50% 50%;
+  transform-origin:
+    50% 50%;
 
   pointer-events: none;
 
@@ -399,76 +522,95 @@ button:focus-visible {
     transform;
 
   transition:
-    left 0.06s linear,
-    top 0.06s linear,
-    transform 0.06s linear;
+    left .06s linear,
+    top .06s linear,
+    transform .06s linear;
 }
 
-/* =========================================================
-   ETIQUETA DE MODO
-========================================================= */
+
+/* ==========================================
+   BADGE
+========================================== */
 
 .trip-badge {
   position: absolute;
+
   z-index: 8;
 
   top: 104px;
   right: 28px;
 
   display: inline-flex;
+
   align-items: center;
+
   gap: 8px;
 
-  padding: 9px 13px;
+  padding:
+    9px 13px;
 
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border:
+    1px solid
+    rgba(255,255,255,.9);
+
   border-radius: 999px;
 
-  background: rgba(255, 255, 255, 0.78);
+  background:
+    rgba(255,255,255,.78);
 
   color: #657181;
 
   font-size: 11px;
+
   font-weight: 720;
 
   box-shadow:
-    0 8px 24px rgba(67, 78, 96, 0.1);
+    0 8px 24px
+    rgba(67, 78, 96, .1);
 
-  backdrop-filter: blur(18px);
+  backdrop-filter:
+    blur(18px);
 }
+
 
 #trip-badge-icon {
   font-size: 14px;
 }
 
-/* =========================================================
-   BOTÓN DE INICIO / CONTINUAR
-========================================================= */
+
+/* ==========================================
+   BOTÓN INICIO
+========================================== */
 
 .start-trip-button {
   position: absolute;
+
   z-index: 9;
 
   left: 50%;
   bottom: 28px;
 
-  transform: translateX(-50%);
+  transform:
+    translateX(-50%);
 
   display: grid;
 
   grid-template-columns:
-    auto
-    1fr
-    auto;
+    auto 1fr auto;
 
   align-items: center;
+
   gap: 10px;
 
   min-width: 220px;
 
-  padding: 13px 17px 13px 14px;
+  padding:
+    13px 17px 13px 14px;
 
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border:
+    1px solid
+    rgba(255,255,255,.85);
+
   border-radius: 999px;
 
   background:
@@ -481,16 +623,19 @@ button:focus-visible {
   color: #fff;
 
   box-shadow:
-    0 16px 34px rgba(255, 99, 87, 0.26);
+    0 16px 34px
+    rgba(255, 99, 87, .26);
 
   font-size: 13px;
+
   font-weight: 780;
 
   transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease,
-    opacity 0.22s ease;
+    transform .22s ease,
+    box-shadow .22s ease,
+    opacity .22s ease;
 }
+
 
 .start-trip-button:hover {
   transform:
@@ -498,15 +643,18 @@ button:focus-visible {
     translateY(-2px);
 
   box-shadow:
-    0 20px 38px rgba(255, 99, 87, 0.32);
+    0 20px 38px
+    rgba(255, 99, 87, .32);
 }
+
 
 .start-trip-button:active {
   transform:
     translateX(-50%)
     translateY(0)
-    scale(0.985);
+    scale(.985);
 }
+
 
 .start-trip-button.is-continuation {
   background:
@@ -517,11 +665,14 @@ button:focus-visible {
     );
 
   box-shadow:
-    0 16px 34px rgba(116, 101, 236, 0.24);
+    0 16px 34px
+    rgba(116, 101, 236, .24);
 }
+
 
 .start-icon {
   display: grid;
+
   place-items: center;
 
   width: 27px;
@@ -529,118 +680,153 @@ button:focus-visible {
 
   border-radius: 50%;
 
-  background: rgba(255, 255, 255, 0.18);
+  background:
+    rgba(255,255,255,.18);
 
   font-size: 14px;
 }
 
+
 .button-arrow {
   font-size: 18px;
+
   line-height: 1;
 }
 
-/* =========================================================
+
+/* ==========================================
    FONDO DIFUMINADO
-========================================================= */
+========================================== */
 
 .arrival-backdrop {
   position: fixed;
+
   z-index: 40;
 
   inset: 0;
 
   display: grid;
+
   place-items: center;
 
   padding: 22px;
 
   background:
-    rgba(39, 46, 62, 0.23);
+    rgba(39, 46, 62, .23);
 
   backdrop-filter:
     blur(11px)
     saturate(120%);
 
   opacity: 0;
+
   visibility: hidden;
+
   pointer-events: none;
 
   transition:
-    opacity 0.28s ease,
-    visibility 0.28s ease;
+    opacity .28s ease,
+    visibility .28s ease;
 }
+
 
 .arrival-backdrop.open {
   opacity: 1;
+
   visibility: visible;
+
   pointer-events: auto;
 }
 
-/* =========================================================
-   VENTANA DE LLEGADA
-========================================================= */
+
+/* ==========================================
+   MODAL
+========================================== */
 
 .arrival-modal {
-  width: min(520px, 100%);
-  max-height: min(80vh, 700px);
+  width:
+    min(520px, 100%);
+
+  max-height:
+    min(80vh, 700px);
 
   display: flex;
+
   flex-direction: column;
 
   overflow: hidden;
 
-  border: 1px solid rgba(255, 255, 255, 0.88);
+  border:
+    1px solid
+    rgba(255,255,255,.88);
+
   border-radius: 31px;
 
   background:
     radial-gradient(
       circle at 88% 4%,
-      rgba(255, 200, 87, 0.18),
+      rgba(255, 200, 87, .18),
       transparent 24%
     ),
+
     radial-gradient(
       circle at 8% 92%,
-      rgba(103, 199, 255, 0.14),
+      rgba(103, 199, 255, .14),
       transparent 28%
     ),
-    rgba(255, 255, 255, 0.95);
+
+    rgba(255,255,255,.95);
 
   box-shadow:
-    0 34px 90px rgba(50, 41, 41, 0.22);
+    0 34px 90px
+    rgba(50, 41, 41, .22);
 
   transform:
     translateY(14px)
-    scale(0.97);
+    scale(.97);
 
   transition:
-    transform 0.36s cubic-bezier(.22, 1, .36, 1);
+    transform .36s
+    cubic-bezier(.22,1,.36,1);
 }
 
-.arrival-backdrop.open .arrival-modal {
+
+.arrival-backdrop.open
+.arrival-modal {
   transform:
     translateY(0)
     scale(1);
 }
 
+
 .arrival-topbar {
   display: flex;
+
   align-items: center;
-  justify-content: space-between;
+
+  justify-content:
+    space-between;
+
   gap: 12px;
 
-  padding: 18px 18px 0 22px;
+  padding:
+    18px 18px 0 22px;
 }
+
 
 .close-button {
   display: grid;
+
   place-items: center;
 
   width: 38px;
   height: 38px;
 
-  flex: 0 0 38px;
+  flex:
+    0 0 38px;
 
   border: 0;
+
   border-radius: 50%;
 
   background: #f3f2f0;
@@ -648,17 +834,23 @@ button:focus-visible {
   color: #586272;
 
   font-size: 25px;
+
   line-height: 1;
 
   transition:
-    transform 0.18s ease,
-    background 0.18s ease;
+    transform .18s ease,
+    background .18s ease;
 }
 
+
 .close-button:hover {
-  transform: scale(1.04);
-  background: #eceae7;
+  transform:
+    scale(1.04);
+
+  background:
+    #eceae7;
 }
+
 
 .arrival-view {
   min-height: 0;
@@ -669,12 +861,15 @@ button:focus-visible {
     8px 22px 18px;
 }
 
+
 .arrival-hero {
   padding-top: 4px;
 }
 
+
 .stop-emoji {
   display: inline-grid;
+
   place-items: center;
 
   width: 60px;
@@ -687,65 +882,87 @@ button:focus-visible {
   background:
     linear-gradient(
       135deg,
-      rgba(255, 107, 95, 0.16),
-      rgba(255, 200, 87, 0.2)
+      rgba(255,107,95,.16),
+      rgba(255,200,87,.2)
     );
 
   font-size: 30px;
 
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    inset
+    0 1px 0
+    rgba(255,255,255,.7);
 }
+
 
 .arrival-view h2 {
   margin: 0;
 
-  font-size: clamp(31px, 6vw, 45px);
-  line-height: 0.98;
-  letter-spacing: -0.065em;
+  font-size:
+    clamp(
+      31px,
+      6vw,
+      45px
+    );
+
+  line-height: .98;
+
+  letter-spacing: -.065em;
 }
 
-.arrival-view .arrival-subtitle {
+
+.arrival-view
+.arrival-subtitle {
   margin: 10px 0 0;
 
   color: #6f7887;
 
   font-size: 13px;
+
   font-weight: 650;
 }
 
-.arrival-view .arrival-description {
+
+.arrival-view
+.arrival-description {
   margin: 18px 0 0;
 
   color: #536071;
 
   font-size: 14px;
+
   line-height: 1.65;
 }
 
+
 .route-chip {
   display: inline-flex;
+
   align-items: center;
+
   gap: 7px;
 
   margin-top: 18px;
 
-  padding: 8px 11px;
+  padding:
+    8px 11px;
 
   border-radius: 999px;
 
   background:
-    rgba(103, 199, 255, 0.12);
+    rgba(103, 199, 255, .12);
 
   color: #59748a;
 
   font-size: 11px;
+
   font-weight: 760;
 }
 
-/* =========================================================
-   BOTONES DE LA VENTANA
-========================================================= */
+
+/* ==========================================
+   BOTONES MODAL
+========================================== */
 
 .arrival-actions,
 .memory-actions {
@@ -753,7 +970,7 @@ button:focus-visible {
 
   grid-template-columns:
     1.25fr
-    0.9fr;
+    .9fr;
 
   gap: 10px;
 
@@ -761,35 +978,48 @@ button:focus-visible {
     0 22px 22px;
 }
 
+
 .memory-actions {
   grid-template-columns: 1fr;
 }
 
+
 .modal-button {
   display: flex;
+
   align-items: center;
-  justify-content: space-between;
+
+  justify-content:
+    space-between;
+
   gap: 10px;
 
   min-height: 52px;
 
-  padding: 13px 16px;
+  padding:
+    13px 16px;
 
-  border: 1px solid transparent;
+  border:
+    1px solid transparent;
+
   border-radius: 17px;
 
   font-size: 13px;
+
   font-weight: 780;
 
   transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    background 0.18s ease;
+    transform .18s ease,
+    box-shadow .18s ease,
+    background .18s ease;
 }
 
+
 .modal-button:hover {
-  transform: translateY(-1px);
+  transform:
+    translateY(-1px);
 }
+
 
 .modal-button.primary {
   background:
@@ -802,8 +1032,10 @@ button:focus-visible {
   color: #fff;
 
   box-shadow:
-    0 12px 24px rgba(255, 103, 90, 0.2);
+    0 12px 24px
+    rgba(255, 103, 90, .2);
 }
+
 
 .modal-button.secondary {
   border-color: #e8e1dc;
@@ -813,29 +1045,43 @@ button:focus-visible {
   color: #3f4b5b;
 
   box-shadow:
-    0 8px 20px rgba(64, 60, 58, 0.07);
+    0 8px 20px
+    rgba(64, 60, 58, .07);
 }
+
 
 .modal-button.full {
   width: 100%;
 }
 
-/* =========================================================
+
+/* ==========================================
    RECUERDOS
-========================================================= */
+========================================== */
 
 .memory-heading {
   margin: 2px 0 0;
 }
 
-.memory-heading .memory-kicker {
+
+.memory-heading
+.memory-kicker {
   margin-bottom: 9px;
-  color: var(--coral-dark);
+
+  color:
+    var(--coral-dark);
 }
 
+
 .memory-heading h2 {
-  font-size: clamp(27px, 5vw, 38px);
+  font-size:
+    clamp(
+      27px,
+      5vw,
+      38px
+    );
 }
+
 
 .memory-heading p {
   margin: 12px 0 0;
@@ -845,43 +1091,55 @@ button:focus-visible {
   font-size: 13px;
 }
 
+
 .memory-copy {
   margin: 18px 0 0;
 
   color: #526071;
 
   font-size: 14px;
+
   line-height: 1.67;
 
   white-space: pre-line;
 }
 
+
 .memory-photos {
   display: grid;
 
   grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
 
   gap: 10px;
 
   margin-top: 20px;
 }
 
+
 .memory-photo {
   display: block;
 
   width: 100%;
+
   aspect-ratio: 4 / 5;
 
   object-fit: cover;
 
   border-radius: 16px;
 
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border:
+    1px solid
+    rgba(255,255,255,.9);
 
   box-shadow:
-    0 8px 18px rgba(74, 63, 59, 0.12);
+    0 8px 18px
+    rgba(74, 63, 59, .12);
 }
+
 
 .memory-empty {
   margin-top: 18px;
@@ -891,38 +1149,49 @@ button:focus-visible {
   border-radius: 17px;
 
   background:
-    rgba(255, 200, 87, 0.13);
+    rgba(255, 200, 87, .13);
 
   color: #7b6e4b;
 
   font-size: 12px;
+
   line-height: 1.5;
 }
 
-/* =========================================================
+
+/* ==========================================
    ERROR MAPA
-========================================================= */
+========================================== */
 
 .map-error {
   position: absolute;
+
   z-index: 10;
 
   left: 50%;
   top: 50%;
 
   transform:
-    translate(-50%, -50%);
+    translate(
+      -50%,
+      -50%
+    );
 
-  width: min(520px, calc(100% - 40px));
+  width:
+    min(
+      520px,
+      calc(100% - 40px)
+    );
 
   padding: 18px;
 
   border-radius: 18px;
 
   background:
-    rgba(255, 255, 255, 0.9);
+    rgba(255,255,255,.9);
 
-  box-shadow: var(--soft-shadow);
+  box-shadow:
+    var(--soft-shadow);
 
   color: #596576;
 
@@ -931,11 +1200,13 @@ button:focus-visible {
   line-height: 1.55;
 }
 
-/* =========================================================
+
+/* ==========================================
    TABLET
-========================================================= */
+========================================== */
 
 @media (max-width: 900px) {
+
   .header {
     max-width: 280px;
   }
@@ -952,28 +1223,40 @@ button:focus-visible {
     top: 96px;
     right: 18px;
   }
+
 }
 
-/* =========================================================
+
+/* ==========================================
    MÓVIL
-========================================================= */
+========================================== */
 
 @media (max-width: 700px) {
+
   #app {
     min-height: 0;
   }
 
+
   .header {
-    top: max(16px, env(safe-area-inset-top));
+    top:
+      max(
+        16px,
+        env(safe-area-inset-top)
+      );
+
     left: 18px;
   }
+
 
   .header h1 {
     font-size: 28px;
   }
 
+
   .mode-switch {
     top: 78px;
+
     left: 12px;
     right: 12px;
 
@@ -982,54 +1265,76 @@ button:focus-visible {
     justify-content: center;
   }
 
+
   .mode-button {
     flex: 1;
 
     min-height: 38px;
 
-    padding: 8px 7px;
+    padding:
+      8px 7px;
 
     font-size: 10.5px;
   }
 
+
   .trip-badge {
     top: 126px;
+
     right: 14px;
 
-    padding: 8px 11px;
+    padding:
+      8px 11px;
 
     font-size: 10px;
   }
 
+
   #vehicle {
     width: 42px;
     height: 42px;
+
     font-size: 23px;
   }
 
+
   .start-trip-button {
     right: 16px;
-    bottom: max(16px, env(safe-area-inset-bottom));
+
+    bottom:
+      max(
+        16px,
+        env(safe-area-inset-bottom)
+      );
+
     left: 16px;
 
     width: auto;
+
     min-width: 0;
 
     transform: none;
   }
 
+
   .start-trip-button:hover {
-    transform: translateY(-2px);
+    transform:
+      translateY(-2px);
   }
 
+
   .start-trip-button:active {
-    transform: scale(0.985);
+    transform:
+      scale(.985);
   }
+
 
   .arrival-backdrop {
     align-items: end;
+
     padding: 10px;
   }
+
 
   .arrival-modal {
     width: 100%;
@@ -1044,6 +1349,7 @@ button:focus-visible {
       22px;
   }
 
+
   .arrival-actions,
   .memory-actions {
     padding-bottom:
@@ -1053,34 +1359,46 @@ button:focus-visible {
       );
   }
 
+
   .arrival-view {
     padding-inline: 18px;
   }
+
 
   .arrival-view h2 {
     font-size: 34px;
   }
 
+
   .arrival-actions {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns:
+      1fr
+      1fr;
+
     padding-inline: 18px;
   }
 
+
   .modal-button {
     min-height: 49px;
+
     font-size: 12px;
   }
+
 }
 
-/* =========================================================
-   REDUCIR ANIMACIONES
-========================================================= */
+
+/* ==========================================
+   MENOS ANIMACIÓN
+========================================== */
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
   }
+
 }
