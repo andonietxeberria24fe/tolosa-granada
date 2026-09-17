@@ -1,11 +1,21 @@
 (() => {
   "use strict";
 
+
+  /* ==========================================
+     RECUERDOS
+  ========================================== */
+
   const memories = {
+
     tolosa: {
+
       title: "Tolosa",
+
       emoji: "🏠",
-      subtitle: "Aquí empieza todo",
+
+      subtitle:
+        "Aquí empieza todo",
 
       description:
         "El punto de partida. Antes de poner rumbo al sur todavía quedaba carretera, risas y un montón de historias por delante.",
@@ -14,12 +24,18 @@
         "Aquí puedes colocar la carta de bienvenida, una foto de la salida o ese primer recuerdo que quieras que aparezca al empezar el viaje.",
 
       photos: []
+
     },
 
+
     aizkorri: {
+
       title: "Aizkorri",
+
       emoji: "⛰️",
-      subtitle: "Primera parada",
+
+      subtitle:
+        "Primera parada",
 
       description:
         "Una primera pausa en nuestro camino, entre montañas y aire de casa. El viaje ya ha empezado de verdad.",
@@ -28,12 +44,18 @@
         "Añade aquí las fotos y la pequeña historia de esta parada.",
 
       photos: []
+
     },
 
+
     obanos: {
+
       title: "Óbanos",
+
       emoji: "🌿",
-      subtitle: "Seguimos bajando",
+
+      subtitle:
+        "Seguimos bajando",
 
       description:
         "Otra parada en el camino para descansar un poco, disfrutar del momento y seguir acumulando kilómetros y recuerdos.",
@@ -42,12 +64,18 @@
         "Añade aquí las fotos y anécdotas de Óbanos.",
 
       photos: []
+
     },
 
+
     oropesa: {
+
       title: "Oropesa",
+
       emoji: "🌊",
-      subtitle: "Ya huele a Mediterráneo",
+
+      subtitle:
+        "Ya huele a Mediterráneo",
 
       description:
         "Aquí cambia el paisaje y el viaje se empieza a sentir diferente: más luz, más mar y la sensación de que todavía queda mucho por vivir.",
@@ -56,12 +84,18 @@
         "Añade aquí las fotos y recuerdos de Oropesa.",
 
       photos: []
+
     },
 
+
     benidorm: {
+
       title: "Benidorm",
+
       emoji: "☀️",
-      subtitle: "Parada con sol",
+
+      subtitle:
+        "Parada con sol",
 
       description:
         "Una de esas paradas que se recuerdan por el ambiente, las bromas y todo lo que acaba pasando cuando viajas con amigos.",
@@ -70,12 +104,18 @@
         "Añade aquí las fotos, vídeos o anécdotas de Benidorm.",
 
       photos: []
+
     },
 
+
     granada: {
+
       title: "Granada",
+
       emoji: "🏰",
-      subtitle: "Hemos llegado",
+
+      subtitle:
+        "Hemos llegado",
 
       description:
         "Última parada. Después de tantos kilómetros, toca disfrutar de Granada y guardar en la memoria todo lo que ha pasado por el camino.",
@@ -84,8 +124,15 @@
         "Aquí puedes colocar la carta final, las últimas fotos y cualquier mensaje de despedida.",
 
       photos: []
+
     }
+
   };
+
+
+  /* ==========================================
+     ELEMENTOS
+  ========================================== */
 
   const backdrop =
     document.getElementById(
@@ -137,34 +184,56 @@
       "memory-back"
     );
 
-  let currentId = null;
+
+  let currentId =
+    null;
+
   let currentContinueHandler =
     null;
 
-  function setOpen(open) {
+
+  /* ==========================================
+     ABRIR / CERRAR
+  ========================================== */
+
+  function setOpen(
+    open
+  ) {
+
     backdrop.classList.toggle(
       "open",
       open
     );
+
 
     backdrop.setAttribute(
       "aria-hidden",
       String(!open)
     );
 
+
     document.body.classList.toggle(
       "modal-open",
       open
     );
+
   }
+
+
+  /* ==========================================
+     VENTANA DE LLEGADA
+  ========================================== */
 
   function renderArrival(
     memory
   ) {
+
     kicker.textContent =
       "HAS LLEGADO";
 
+
     view.replaceChildren();
+
 
     const hero =
       document.createElement(
@@ -173,6 +242,7 @@
 
     hero.className =
       "arrival-hero";
+
 
     const emoji =
       document.createElement(
@@ -185,6 +255,7 @@
     emoji.textContent =
       memory.emoji;
 
+
     const title =
       document.createElement(
         "h2"
@@ -195,6 +266,7 @@
 
     title.textContent =
       memory.title;
+
 
     const subtitle =
       document.createElement(
@@ -207,6 +279,7 @@
     subtitle.textContent =
       memory.subtitle;
 
+
     const description =
       document.createElement(
         "p"
@@ -218,6 +291,7 @@
     description.textContent =
       memory.description;
 
+
     const chip =
       document.createElement(
         "div"
@@ -226,13 +300,18 @@
     chip.className =
       "route-chip";
 
+
     chip.innerHTML =
       `
-        <span>📍</span>
+        <span>
+          📍
+        </span>
+
         <span>
           Parada guardada en el viaje
         </span>
       `;
+
 
     hero.append(
       emoji,
@@ -242,24 +321,35 @@
       chip
     );
 
+
     view.appendChild(
       hero
     );
+
 
     arrivalActions.hidden =
       false;
 
     memoryActions.hidden =
       true;
+
   }
+
+
+  /* ==========================================
+     VENTANA DE RECUERDOS
+  ========================================== */
 
   function renderMemory(
     memory
   ) {
+
     kicker.textContent =
       "UN RECUERDO DEL VIAJE";
 
+
     view.replaceChildren();
+
 
     const heading =
       document.createElement(
@@ -268,6 +358,7 @@
 
     heading.className =
       "memory-heading";
+
 
     const memoryKicker =
       document.createElement(
@@ -280,6 +371,7 @@
     memoryKicker.textContent =
       `${memory.emoji} RECUERDOS`;
 
+
     const title =
       document.createElement(
         "h2"
@@ -291,6 +383,7 @@
     title.textContent =
       memory.title;
 
+
     const subtitle =
       document.createElement(
         "p"
@@ -298,6 +391,7 @@
 
     subtitle.textContent =
       memory.subtitle;
+
 
     const copy =
       document.createElement(
@@ -310,6 +404,7 @@
     copy.textContent =
       memory.memoryText;
 
+
     heading.append(
       memoryKicker,
       title,
@@ -317,13 +412,16 @@
       copy
     );
 
+
     view.appendChild(
       heading
     );
 
+
     if (
       memory.photos.length
     ) {
+
       const gallery =
         document.createElement(
           "div"
@@ -332,174 +430,301 @@
       gallery.className =
         "memory-photos";
 
+
       memory.photos.forEach(
-        (src, index) => {
+        (
+          src,
+          index
+        ) => {
+
           const image =
             document.createElement(
               "img"
             );
 
+
           image.className =
             "memory-photo";
 
-          image.src = src;
+
+          image.src =
+            src;
+
 
           image.alt =
             `Recuerdo ${index + 1} de ${memory.title}`;
 
+
           image.loading =
             "lazy";
+
 
           gallery.appendChild(
             image
           );
+
         }
       );
+
 
       view.appendChild(
         gallery
       );
-    } else {
+
+    }
+
+    else {
+
       const empty =
         document.createElement(
           "div"
         );
 
+
       empty.className =
         "memory-empty";
+
 
       empty.textContent =
         "📸 Todavía no has añadido fotos a esta parada. Este hueco queda preparado para ellas.";
 
+
       view.appendChild(
         empty
       );
+
     }
+
 
     arrivalActions.hidden =
       true;
 
     memoryActions.hidden =
       false;
+
   }
+
+
+  /* ==========================================
+     ABRIR LLEGADA
+  ========================================== */
 
   function openArrival(
     id,
     onContinue
   ) {
+
     const memory =
       memories[id];
 
-    if (!memory) return;
 
-    currentId = id;
+    if (!memory) {
+      return;
+    }
+
+
+    currentId =
+      id;
+
 
     currentContinueHandler =
       typeof onContinue ===
       "function"
+
         ? onContinue
+
         : null;
+
 
     renderArrival(
       memory
     );
 
-    setOpen(true);
+
+    setOpen(
+      true
+    );
+
   }
+
+
+  /* ==========================================
+     ABRIR RECUERDO
+  ========================================== */
 
   function openMemory(
     id = currentId
   ) {
+
     const memory =
       memories[id];
 
-    if (!memory) return;
 
-    currentId = id;
+    if (!memory) {
+      return;
+    }
+
+
+    currentId =
+      id;
+
 
     renderMemory(
       memory
     );
 
-    setOpen(true);
+
+    setOpen(
+      true
+    );
+
   }
 
+
+  /* ==========================================
+     CERRAR
+  ========================================== */
+
   function close() {
-    setOpen(false);
+
+    setOpen(
+      false
+    );
+
   }
+
+
+  /* ==========================================
+     BOTÓN SEGUIMOS
+  ========================================== */
 
   continueButton.addEventListener(
     "click",
     () => {
+
       const callback =
         currentContinueHandler;
+
 
       if (
         typeof callback ===
         "function"
       ) {
+
         callback();
+
       }
+
     }
   );
+
+
+  /* ==========================================
+     BOTÓN RECUERDOS
+  ========================================== */
 
   memoryButton.addEventListener(
     "click",
     () => {
+
       openMemory();
+
     }
   );
+
+
+  /* ==========================================
+     VOLVER
+  ========================================== */
 
   backButton.addEventListener(
     "click",
     () => {
+
       const memory =
         memories[currentId];
 
+
       if (memory) {
+
         renderArrival(
           memory
         );
+
       }
+
     }
   );
+
+
+  /* ==========================================
+     CERRAR CON X
+  ========================================== */
 
   closeButton.addEventListener(
     "click",
     close
   );
 
+
+  /* ==========================================
+     CERRAR CLICANDO FUERA
+  ========================================== */
+
   backdrop.addEventListener(
     "click",
     event => {
+
       if (
         event.target ===
         backdrop
       ) {
+
         close();
+
       }
+
     }
   );
+
+
+  /* ==========================================
+     ESCAPE
+  ========================================== */
 
   document.addEventListener(
     "keydown",
     event => {
+
       if (
         event.key ===
-          "Escape" &&
+        "Escape" &&
+
         backdrop.classList.contains(
           "open"
         )
       ) {
+
         close();
+
       }
+
     }
   );
 
+
+  /* ==========================================
+     API GLOBAL
+  ========================================== */
+
   window.TripGallery = {
+
     memories,
+
     openArrival,
+
     openMemory,
+
     close,
 
     closeMemory:
@@ -510,5 +735,7 @@
         backdrop.classList.contains(
           "open"
         )
+
   };
+
 })();
